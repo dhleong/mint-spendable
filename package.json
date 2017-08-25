@@ -1,0 +1,25 @@
+{
+  "name": "mint-spendable",
+  "version": "1.0.0",
+  "description": "Check how much I can spend",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [
+    "mint.com",
+    "mint",
+    "api"
+  ],
+  "author": "Daniel Leong <me@dhleong.net>",
+  "license": "ISC",
+  "dependencies": {
+    "pepper-mint": "^1.1.1"
+  },
+  "devDependencies": {
+    "mocha": "^3.4.2"
+  }
+}
