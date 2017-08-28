@@ -3,17 +3,33 @@
 const PepperMint = require('pepper-mint');
 const config = require('./config.json');
 
-let definiteCategories = config.definiteCategories.reduce((m, cat) => {
+const definiteCategories = config.definiteCategories.reduce((m, cat) => {
     m[cat] = true;
     return m;
 }, {});
+const maxRefreshingIds = config.maxRefreshingIds || 0;
 
 function fmt$(amount) {
     return '$' + amount.toFixed(2);
 }
 
+console.log("Signing in...");
 PepperMint(config.username, config.password, config.cookie)
 .then(mint => {
+    mint.on('refreshing', status => {
+        if (Array.isArray(status)) {
+            console.log("Refreshing accounts: ", status.map(a => a.name));
+        } else {
+            console.log("Still refreshing: ", status - maxRefreshingIds);
+        }
+    });
+
+    console.log("Checking if accounts need to be refreshed...");
+    return mint.refreshAndWaitIfNeeded({
+        maxRefreshingIds: maxRefreshingIds
+    });
+}).then(mint => {
+    console.log("Fetching budgets...");
     return mint.getBudgets();
 }).then(budgets => {
     let budgeted = budgets.spending.map(b => b.bgt)
@@ -43,6 +59,7 @@ PepperMint(config.username, config.password, config.cookie)
 
     let nonInferredSpending = spent - definiteSpending;
     let spendable = budgeted - spent - unbudgeted;
+    console.log();
     console.log();
     console.log(`Budgeted ${fmt$(budgeted)}; spent ${fmt$(spent + unbudgeted)}`);
     console.log(`        Actual spending: ${fmt$(nonInferredSpending)}`);
