@@ -7,6 +7,11 @@ const definiteCategories = config.definiteCategories.reduce((m, cat) => {
     m[cat] = true;
     return m;
 }, {});
+/** goal categories are ignored in unbudgeted spending */
+const goalCategories = config.goalCategories.reduce((m, cat) => {
+    m[cat] = true;
+    return m;
+}, {});
 const ignoredRollover = config.ignoredRolloverCategories.reduce((m, cat) => {
     m[cat] = true;
     return m;
@@ -42,12 +47,12 @@ PepperMint(config.username, config.password, config.cookie)
         });
 
     let unbudgetedItems = budgets.unbudgeted.spending.filter(b =>
-        b.cat != 0 && b.amt > 0
+        b.cat != 0 && b.amt > 0 && !goalCategories[b.category]
     );
 
     let unbudgeted = unbudgetedItems.map(b => b.amt).reduce((total, a) => {
         return total + a;
-    });
+    }, 0);
 
     let definiteSpending = 0;
     let spent = budgets.spending.map(b => {
@@ -61,7 +66,7 @@ PepperMint(config.username, config.password, config.cookie)
         }
     }).reduce((total, a) => {
         return total + a;
-    });
+    }, 0);
 
     let nonInferredSpending = spent - definiteSpending;
     let spendable = budgeted - spent - unbudgeted;
@@ -79,7 +84,7 @@ PepperMint(config.username, config.password, config.cookie)
     let monthDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     let thisDay = now.getDate();
     let remainingDays = monthDays - thisDay;
-    let avgSpending = nonInferredSpending / thisDay;
+    let avgSpending = (nonInferredSpending + unbudgeted) / thisDay;
 
     if (now.getHours() < 20) {
         // before 8pm, we add today as a remaining day
@@ -106,13 +111,15 @@ PepperMint(config.username, config.password, config.cookie)
         console.log(` - ${b.category}: ${fmt$(b.amt)}`);
     });
 
-    console.log("Unbudgeted spending:");
-    unbudgetedItems.sort((a, b) => a.category.localeCompare(b.category));
-    unbudgetedItems.forEach(b => {
-        if (b.cat != 0 && b.amt > 0) {
-            console.log(` - ${b.category}: ${fmt$(b.amt)}`);
-        }
-    });
+    if (unbudgetedItems.length) {
+        console.log("Unbudgeted spending:");
+        unbudgetedItems.sort((a, b) => a.category.localeCompare(b.category));
+        unbudgetedItems.forEach(b => {
+            if (b.cat != 0 && b.amt > 0) {
+                console.log(` - ${b.category}: ${fmt$(b.amt)}`);
+            }
+        });
+    }
 
 }).fail(err => {
     console.log("ERRR", err);
