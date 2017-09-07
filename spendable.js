@@ -77,7 +77,9 @@ PepperMint(config.username, config.password, config.cookie)
 
     let now = new Date();
     let monthDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    let remainingDays = monthDays - now.getDate();
+    let thisDay = now.getDate();
+    let remainingDays = monthDays - thisDay;
+    let avgSpending = nonInferredSpending / thisDay;
 
     if (now.getHours() < 20) {
         // before 8pm, we add today as a remaining day
@@ -85,9 +87,10 @@ PepperMint(config.username, config.password, config.cookie)
     }
 
     console.log(`  Spendable per day: ${fmt$(spendable / remainingDays)}`);
-    console.log(`                     (${remainingDays}/${monthDays} days left)\n`);
+    console.log(`                     (${remainingDays}/${monthDays} days left)`);
+    console.log(`   Average spending: ${fmt$(avgSpending)}`);
 
-    console.log("Inferred spending:");
+    console.log("\nInferred spending:");
     budgets.spending.filter(b => definiteCategories[b.category]).forEach(b => {
         console.log(` - ${b.category}: ${fmt$(b.bgt)}`);
     });
