@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+const CONFIG_FILE = './config.json';
+
 const PepperMint = require('pepper-mint');
-const config = require('./config.json');
+const config = require(CONFIG_FILE);
 
 const definiteCategories = config.definiteCategories.reduce((m, cat) => {
     m[cat] = true;
@@ -23,8 +25,17 @@ function fmt$(amount) {
 }
 
 console.log("Signing in...");
-PepperMint(config.username, config.password, config.cookie)
-.then(mint => {
+(async () => {
+    const mint = await PepperMint(config.username, config.password, config.cookie)
+    if (!config.cookie) {
+        config.cookie = `ius_session=${mint.sessionCookies.ius_session}; ` +
+            `thx_guid=${mint.sessionCookies.thx_guid};`;
+        const fs = require('fs');
+        fs.writeFile(CONFIG_FILE, JSON.stringify(config), e => {
+            if (e) console.warn("Unable to save cookies!");
+        });
+    }
+
     mint.on('refreshing', status => {
         if (Array.isArray(status)) {
             console.log("Refreshing accounts: ", status.map(a => a.name));
@@ -34,13 +45,13 @@ PepperMint(config.username, config.password, config.cookie)
     });
 
     console.log("Checking if accounts need to be refreshed...");
-    return mint.refreshAndWaitIfNeeded({
+    await mint.refreshAndWaitIfNeeded({
         maxRefreshingIds: maxRefreshingIds
     });
-}).then(mint => {
+
     console.log("Fetching budgets...");
-    return mint.getBudgets();
-}).then(budgets => {
+    const budgets = await mint.getBudgets();
+
     let budgeted = budgets.spending.map(b => b.bgt)
         .reduce((total, a) => {
             return total + a;
@@ -120,8 +131,4 @@ PepperMint(config.username, config.password, config.cookie)
             }
         });
     }
-
-}).fail(err => {
-    console.log("ERRR", err);
-    if (err) throw err;
-});
+})();
