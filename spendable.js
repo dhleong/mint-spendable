@@ -7,6 +7,10 @@ const definiteCategories = config.definiteCategories.reduce((m, cat) => {
     m[cat] = true;
     return m;
 }, {});
+const ignoredRollover = config.ignoredRolloverCategories.reduce((m, cat) => {
+    m[cat] = true;
+    return m;
+}, {});
 const maxRefreshingIds = config.maxRefreshingIds || 0;
 
 function fmt$(amount) {
@@ -50,8 +54,10 @@ PepperMint(config.username, config.password, config.cookie)
         if (definiteCategories[b.category]) {
             definiteSpending += b.bgt;
             return Math.max(b.amt, b.bgt);
-        } else {
+        } else if (b.amt > 0 && !ignoredRollover[b.category]) {
             return b.amt;
+        } else {
+            return 0;
         }
     }).reduce((total, a) => {
         return total + a;
@@ -84,6 +90,17 @@ PepperMint(config.username, config.password, config.cookie)
     console.log("Inferred spending:");
     budgets.spending.filter(b => definiteCategories[b.category]).forEach(b => {
         console.log(` - ${b.category}: ${fmt$(b.bgt)}`);
+    });
+
+    console.log("Rolled over:");
+    budgets.spending.filter(b => !ignoredRollover[b.category] && b.amt < 0)
+    .forEach(b => {
+        console.log(` - ${b.category}: ${fmt$(b.amt)}`);
+    });
+
+    console.log("Budgeted spending:");
+    budgets.spending.filter(b => !definiteCategories[b.category] && b.amt > 0).forEach(b => {
+        console.log(` - ${b.category}: ${fmt$(b.amt)}`);
     });
 
     console.log("Unbudgeted spending:");
