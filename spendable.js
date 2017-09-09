@@ -86,13 +86,17 @@ console.log("Signing in...");
     console.log(`Budgeted ${fmt$(budgeted)}; spent ${fmt$(spent + unbudgeted)}`);
     console.log(`        Actual spending: ${fmt$(nonInferredSpending)}`);
     console.log(`  +   Inferred spending: ${fmt$(definiteSpending)}`);
-    console.log(`  + Unbudgeted spending: ${fmt$(unbudgeted)}\n`);
-
-    console.log(` Inferred spendable: ${fmt$(budgeted - definiteSpending)}`);
-    console.log(`Remaining spendable: ${fmt$(spendable)}`);
+    if (unbudgeted > 0) {
+        console.log(`  + Unbudgeted spending: ${fmt$(unbudgeted)}\n`);
+    }
 
     let now = new Date();
     let monthDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
+    console.log(` Inferred spendable: ${fmt$(budgeted - definiteSpending)}`);
+    console.log(`            per day: ${fmt$((budgeted - definiteSpending) / monthDays)}`);
+    console.log(`Remaining spendable: ${fmt$(spendable)}`);
+
     let thisDay = now.getDate();
     let remainingDays = monthDays - thisDay;
     let avgSpending = (nonInferredSpending + unbudgeted) / thisDay;
@@ -131,4 +135,7 @@ console.log("Signing in...");
             }
         });
     }
-})();
+})().catch(e => {
+    console.log(e);
+    console.log(e.stack);
+});
