@@ -20,6 +20,11 @@ const ignoredRollover = config.ignoredRolloverCategories.reduce((m, cat) => {
 }, {});
 const maxRefreshingIds = config.maxRefreshingIds || 0;
 
+function doneRefreshing(accounts) {
+    // TODO we could have a specific list of accounts to ignore
+    return accounts.length <= maxRefreshingIds;
+}
+
 function fmt$(amount) {
     return '$' + amount.toFixed(2);
 }
@@ -36,17 +41,19 @@ console.log("Signing in...");
         });
     }
 
-    mint.on('refreshing', status => {
-        if (Array.isArray(status)) {
-            console.log("Refreshing accounts: ", status.map(a => a.name));
+    var firstNotification = true;
+    mint.on('refreshing', accounts => {
+        const names = accounts.map(it => it.name);
+        if (firstNotification) {
+            console.log("Refreshing accounts: ", names);
         } else {
-            console.log("Still refreshing: ", status - maxRefreshingIds);
+            console.log("Still refreshing: ", names);
         }
     });
 
     console.log("Checking if accounts need to be refreshed...");
     await mint.refreshAndWaitIfNeeded({
-        maxRefreshingIds: maxRefreshingIds
+        doneRefreshing: doneRefreshing
     });
 
     console.log("Fetching budgets...");
