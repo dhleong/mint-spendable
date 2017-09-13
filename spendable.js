@@ -21,8 +21,17 @@ const ignoredRollover = config.ignoredRolloverCategories.reduce((m, cat) => {
 const maxRefreshingIds = config.maxRefreshingIds || 0;
 
 function doneRefreshing(accounts) {
-    // TODO we could have a specific list of accounts to ignore
-    return accounts.length <= maxRefreshingIds;
+    let remaining = accounts.length;
+    if (config.unrelatedAccounts) {
+        for (const account of accounts) {
+            if (config.unrelatedAccounts.indexOf(account.name) !== -1) {
+                // unrelated; ignore it
+                --remaining;
+            }
+        }
+    }
+
+    return remaining <= maxRefreshingIds;
 }
 
 function fmt$(amount) {
