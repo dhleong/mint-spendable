@@ -17,6 +17,7 @@
   "author": "Daniel Leong <me@dhleong.net>",
   "license": "ISC",
   "dependencies": {
+    "blessed": "^0.1.81",
     "pepper-mint": "^1.4.1"
   },
   "devDependencies": {

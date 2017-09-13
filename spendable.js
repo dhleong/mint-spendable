@@ -3,7 +3,10 @@
 const CONFIG_FILE = './config.json';
 
 const PepperMint = require('pepper-mint');
+const { SpendableUI } = require('./src/ui');
 const config = require(CONFIG_FILE);
+
+const UI = new SpendableUI();
 
 const definiteCategories = config.definiteCategories.reduce((m, cat) => {
     m[cat] = true;
@@ -38,7 +41,8 @@ function fmt$(amount) {
     return '$' + amount.toFixed(2);
 }
 
-console.log("Signing in...");
+// console.log("Signing in...");
+UI.setLoading("Signing in");
 (async () => {
     const mint = await PepperMint(config.username, config.password, config.cookie)
     if (!config.cookie) {
@@ -54,19 +58,21 @@ console.log("Signing in...");
     mint.on('refreshing', accounts => {
         const names = accounts.map(it => it.name);
         if (firstNotification) {
-            console.log("Refreshing accounts: ", names);
+            UI.setLoading("Refreshing accounts:\n" + names.join(", "));
         } else {
-            console.log("Still refreshing: ", names);
+            UI.setLoading("Still refreshing:\n"  + names.join(", "));
         }
     });
 
-    console.log("Checking if accounts need to be refreshed...");
+    UI.setLoading("Checking if accounts need to be refreshed...");
     await mint.refreshAndWaitIfNeeded({
         doneRefreshing: doneRefreshing
     });
 
-    console.log("Fetching budgets...");
+    UI.setLoading("Fetching budgets...");
     const budgets = await mint.getBudgets();
+    UI.setLoading(false);
+    UI.stop();
 
     let budgeted = budgets.spending.map(b => b.bgt)
         .reduce((total, a) => {
@@ -151,6 +157,7 @@ console.log("Signing in...");
             }
         });
     }
+
 })().catch(e => {
     console.log(e);
     console.log(e.stack);
