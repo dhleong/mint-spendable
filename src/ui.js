@@ -54,6 +54,8 @@ class Loader extends blessed.Box {
     constructor(options) {
         super(options);
 
+        this.minHeight = options.minHeight || 2;
+
         this._.icons = [
             '⠄', '⠆', '⠇', '⠋',
             '⠉',
@@ -62,23 +64,34 @@ class Loader extends blessed.Box {
         ];
         this._.iconIndex = 0;
 
+        this._.text = new blessed.Box({
+            parent: this,
+            align: 'center',
+            left: 4,
+            right: 4,
+            height: 1,
+        });
         this._.icon = new blessed.Text({
             parent: this,
             align: 'center',
             top: 2,
             left: 'center',
             height: 1,
-            content: this._.icons[0]
+            content: this._.icons[0],
         });
 
         this.on('destroy', () => this.stop());
     }
 
     load(text) {
-        this.height = count(text, '\n') + 2;
+        const lines = count(text, '\n');
+        this._.icon.top = Math.max(this.minHeight - 1, lines) + 1;
+        this._.text.height = lines + 1;
+        this.height = lines + 2;
+
         if (!this.hidden) this.stop();
         this.show();
-        this.setContent(text);
+        this._.text.setContent(text);
 
         if (this._.timer) {
             this.stop();

@@ -14,7 +14,16 @@ class TestSpendableService extends EventEmitter {
     }
 
     async refreshAndWait() {
-        await delay(BASE_DELAY);
+        await delay(BASE_DELAY * .5);
+
+        this.emit('refreshing', [
+            {name: "Serenity Independent Bank"},
+            {name: "Outer Rim Credit Union"},
+            {name: "The Cargo Hold"},
+            {name: "The Captain's Mattress"},
+        ]);
+
+        await delay(BASE_DELAY * 2);
     }
 
     async loadBudgets() {

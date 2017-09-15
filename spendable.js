@@ -25,6 +25,7 @@ var firstNotification = true;
 SERVICE.on('refreshing', accounts => {
     const names = accounts.map(it => it.name);
     if (firstNotification) {
+        firstNotification = false;
         UI.setLoading("Refreshing accounts:\n" + names.join(", "));
     } else {
         UI.setLoading("Still refreshing:\n"  + names.join(", "));
