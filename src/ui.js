@@ -114,6 +114,39 @@ class Loader extends blessed.Box {
     }
 }
 
+class MultiHeaderListTable extends blessed.ListTable {
+    move(offset) {
+        let target = this.selected + offset;
+        for (;;) {
+            if (target >= this.rows.length) {
+                if (target === 1) break; // nowhere to go
+                target = 1;
+                continue;
+            }
+
+            if (target <= 0) {
+                if (target === this.rows.length - 1) break; // as above
+                target = this.rows.length - 1;
+                continue;
+            }
+
+            if (this.isHeaderRow(target)) {
+                // header row; keep going
+                target += offset;
+            }
+
+            // good to go
+            break;
+        }
+
+        this.select(target);
+    }
+
+    isHeaderRow(index) {
+        return this.rows[index].length === 1;
+    }
+}
+
 class SpendableUI extends EventEmitter {
 
     constructor() {
@@ -226,7 +259,7 @@ class SpendableUI extends EventEmitter {
             rows = rows.concat(category.rows);
         }
 
-        const categories = blessed.ListTable({
+        const categories = new MultiHeaderListTable({
             parent: categoriesBox,
             align: 'left',
             width: '100%',
