@@ -1,5 +1,6 @@
 
 const { EventEmitter } = require('events');
+const BASE_DELAY = 300;
 
 function delay(ms) {
     return new Promise(function(resolve) {
@@ -9,15 +10,15 @@ function delay(ms) {
 
 class TestSpendableService extends EventEmitter {
     async login() {
-        await delay(700);
+        await delay(BASE_DELAY);
     }
 
     async refreshAndWait() {
-        await delay(700);
+        await delay(BASE_DELAY);
     }
 
     async loadBudgets() {
-        await delay(500);
+        await delay(BASE_DELAY * 2/3);
     }
 
     async calculate() {

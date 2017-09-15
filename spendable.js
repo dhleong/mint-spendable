@@ -11,20 +11,28 @@ if (process.argv.indexOf("--test") === -1) {
 
 const { SpendableUI } = require('./src/ui');
 
+// create and init UI
 const UI = new SpendableUI();
+UI.on('show-category-transactions', category => {
+    // TODO
+    console.log(category);
+});
+
+// create and init the service
 const SERVICE = new SpendableService();
 
-(async () => {
-    var firstNotification = true;
-    SERVICE.on('refreshing', accounts => {
-        const names = accounts.map(it => it.name);
-        if (firstNotification) {
-            UI.setLoading("Refreshing accounts:\n" + names.join(", "));
-        } else {
-            UI.setLoading("Still refreshing:\n"  + names.join(", "));
-        }
-    });
+var firstNotification = true;
+SERVICE.on('refreshing', accounts => {
+    const names = accounts.map(it => it.name);
+    if (firstNotification) {
+        UI.setLoading("Refreshing accounts:\n" + names.join(", "));
+    } else {
+        UI.setLoading("Still refreshing:\n"  + names.join(", "));
+    }
+});
 
+// go!
+(async () => {
     UI.setLoading("Signing in…");
     await SERVICE.login();
 
