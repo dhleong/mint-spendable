@@ -31,9 +31,45 @@ class TestSpendableService extends EventEmitter {
     }
 
     async loadTransactions() {
-        // TODO
         await delay(BASE_DELAY);
-        return [];
+        return [
+            {
+                date: 'Sep 14',
+                note: '',
+                isPercent: false,
+                fi: 'Serenity Independent Bank',
+                txnType: 0,
+                numberMatchedByRule: -1,
+                isEdited: false,
+                isPending: true,
+                mcategory: 'Restaurants',
+                isMatched: false,
+                odate: 'Sep 14',
+                isFirstDate: true,
+                id: 1,
+                isDuplicate: false,
+                hasAttachments: false,
+                isChild: false,
+                isSpending: true,
+                amount: '$122.49',
+                ruleCategory: '',
+                userCategoryId: null,
+                isTransfer: false,
+                isAfterFiCreationTime: true,
+                merchant: "Junky's Quality Parts",
+                manualType: 0,
+                labels: [],
+                mmerchant: "Junky's Quality Parts",
+                isCheck: false,
+                omerchant: "JUNKYS QUALITY PARTS",
+                isDebit: true,
+                category: 'Bills & Utilities',
+                ruleMerchant: '',
+                isLinkedToRule: false,
+                account: 'Independent Checking Account',
+                categoryId: 707,
+                ruleCategoryId: 0 }
+        ];
     }
 
     async calculate() {

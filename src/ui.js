@@ -3,6 +3,7 @@ const { EventEmitter } = require('events');
 const blessed = require('blessed');
 
 const { MainUI } = require('./ui/main');
+const { TransactionsUI } = require('./ui/transactions');
 
 function count(text, targetChar) {
     let start = -1;
@@ -108,11 +109,15 @@ class SpendableUI extends EventEmitter {
 
         this._ui = {
             main: new MainUI(screen),
+            transactions: new TransactionsUI(screen),
         };
 
         // forward events: (is there a better way?)
         this._ui.main.on('show-category-transactions', (...args) => {
             this.emit('show-category-transactions', ...args);
+        });
+        this._ui.transactions.on('back', () => {
+            this.emit('back');
         });
     }
 
@@ -132,8 +137,14 @@ class SpendableUI extends EventEmitter {
     }
 
     showBudget(b) {
-        this._ui.main.setBudget(b);
+        if (b) {
+            this._ui.main.setBudget(b);
+        }
         this._ui.main.show();
+    }
+
+    showTransactions(category, transactions) {
+        this._ui.transactions.showTransactions(category, transactions);
     }
 
     reportError(e) {

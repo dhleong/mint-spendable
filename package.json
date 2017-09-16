@@ -4,7 +4,7 @@
   "description": "Check how much I can spend",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha test/**"
   },
   "repository": {
     "type": "git"

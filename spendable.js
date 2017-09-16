@@ -29,10 +29,13 @@ SERVICE.on('refreshing', accounts => {
 
 // init the UI
 UI.on('show-category-transactions', async category => {
-    // UI.setLoading("Loading transactions...");
-    UI.stop();
+    UI.setLoading("Loading transactions...");
     const transactions = await SERVICE.loadTransactions(category);
-    console.log(transactions);
+    UI.showTransactions(category, transactions);
+});
+
+UI.on('back', () => {
+    UI.showBudget();
 });
 
 // go!

@@ -157,7 +157,7 @@ class MainUI extends EventEmitter {
             rows = rows.concat(category.rows);
         }
 
-        const categories = new MultiHeaderListTable({
+        const categories = this.categories = new MultiHeaderListTable({
             parent: categoriesBox,
             align: 'left',
             width: '100%',
@@ -187,6 +187,7 @@ class MainUI extends EventEmitter {
     }
 
     show() {
+        this.categories.focus();
         this.screen.append(this.box);
         this.screen.render();
     }
