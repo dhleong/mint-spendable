@@ -66,6 +66,11 @@ class MultiHeaderListTable extends blessed.ListTable {
         }
 
         this.select(target);
+        if (this.parent && this.parent.scrollable) {
+            // NOTE: subtract 1 from both since we will never be on the first
+            // row (it's always a header)
+            this.parent.setScrollPerc(100 * ((target - 1) / (this.rows.length - 1)));
+        }
     }
 
     isHeaderRow(index) {
@@ -143,7 +148,8 @@ class MainUI extends EventEmitter {
             left: 1,
             right: 1,
             top: 8,
-            height: '100%-10',
+            bottom: 0,
+            scrollable: true,
         });
 
         let rows = [];
