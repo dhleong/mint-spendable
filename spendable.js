@@ -30,8 +30,14 @@ SERVICE.on('refreshing', accounts => {
 // init the UI
 UI.on('show-category-transactions', async category => {
     UI.setLoading("Loading transactions...");
-    const transactions = await SERVICE.loadTransactions(category);
-    UI.showTransactions(category, transactions);
+    try {
+        const transactions = await SERVICE.loadTransactions(category);
+        UI.showTransactions(category, transactions);
+    } catch (e) {
+        // probably, session timed out error. We could possibly
+        // gracefully handle this by re-logging in....
+        UI.reportError(e);
+    }
 });
 
 UI.on('back', () => {
