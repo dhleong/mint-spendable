@@ -30,6 +30,12 @@ class TestSpendableService extends EventEmitter {
         await delay(BASE_DELAY * 2/3);
     }
 
+    async loadTransactions() {
+        // TODO
+        await delay(BASE_DELAY);
+        return [];
+    }
+
     async calculate() {
         return {
             budgeted: 6189.0,

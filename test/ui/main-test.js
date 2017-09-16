@@ -1,6 +1,6 @@
 
 const chai = require('chai');
-const { tableIndexToCategory } = require('../src/ui');
+const { tableIndexToCategory } = require('../../src/ui/main');
 
 const expect = chai.expect;
 chai.should();

@@ -61,6 +61,16 @@ class SpendableService extends EventEmitter {
         this.budgets = await this.mint.getBudgets();
     }
 
+    async loadTransactions(category, offset=0) {
+        const transactions = await this.mint.getTransactions({
+            category: category.cat,
+            offset,
+        });
+
+        // TODO do anything?
+        return transactions;
+    }
+
     async calculate() {
         const budgets = this.budgets;
 

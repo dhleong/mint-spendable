@@ -18,7 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "blessed": "^0.1.81",
-    "pepper-mint": "^1.4.1"
+    "pepper-mint": "^1.5.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
