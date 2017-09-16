@@ -62,12 +62,17 @@ class SpendableService extends EventEmitter {
     }
 
     async loadTransactions(category, offset=0) {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         const transactions = await this.mint.getTransactions({
             category: category.cat,
             offset,
+            startDate: firstDay,
+            endDate: lastDay,
         });
 
-        // TODO do anything?
+        // TODO do we need to do anything to it?
         return transactions;
     }
 
