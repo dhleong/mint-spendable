@@ -1,31 +1,12 @@
 
-const CONFIG_FILE = '../config.json';
-
 const { EventEmitter } = require('events');
 const PepperMint = require('pepper-mint');
-const config = require(CONFIG_FILE);
 
-const definiteCategories = config.definiteCategories.reduce((m, cat) => {
-    m[cat] = true;
-    return m;
-}, {});
-/** goal categories are ignored in unbudgeted spending */
-const goalCategories = config.goalCategories.reduce((m, cat) => {
-    m[cat] = true;
-    return m;
-}, {});
-const ignoredRollover = config.ignoredRolloverCategories.reduce((m, cat) => {
-    m[cat] = true;
-    return m;
-}, {});
-const maxRefreshingIds = config.maxRefreshingIds || 0;
-
-
-function doneRefreshing(accounts) {
+function doneRefreshing(unrelatedAccounts, maxRefreshingIds, accounts) {
     let remaining = accounts.length;
-    if (config.unrelatedAccounts) {
+    if (unrelatedAccounts) {
         for (const account of accounts) {
-            if (config.unrelatedAccounts.indexOf(account.name) !== -1) {
+            if (unrelatedAccounts.indexOf(account.name) !== -1) {
                 // unrelated; ignore it
                 --remaining;
             }
@@ -37,23 +18,40 @@ function doneRefreshing(accounts) {
 
 class SpendableService extends EventEmitter {
 
+    constructor(store, requestCredentials) {
+        super();
+
+        this.store = store;
+        this.requestCredentials = requestCredentials;
+    }
+
     async login() {
-        const mint = this.mint = await PepperMint(config.username, config.password, config.cookie)
-        if (!config.cookie) {
-            config.cookie = `ius_session=${mint.sessionCookies.ius_session}; ` +
+        let creds = await this.store.loadCredentials();
+        let neededCreds = false;
+        if (!creds) {
+            creds = await this.requestCredentials();
+            neededCreds = true;
+        }
+
+        const mint = this.mint = await PepperMint(creds.username, creds.password, creds.cookie)
+        if (neededCreds || !creds.cookie) {
+            creds.cookie = `ius_session=${mint.sessionCookies.ius_session}; ` +
                 `thx_guid=${mint.sessionCookies.thx_guid};`;
-            const fs = require('fs');
-            fs.writeFile(CONFIG_FILE, JSON.stringify(config), e => {
-                if (e) console.warn("Unable to save cookies!");
-            });
+            await this.store.saveCredentials(creds);
         }
 
         mint.on('refreshing', ev => this.emit('refreshing', ev));
     }
 
     async refreshAndWait() {
+        const {
+            unrelatedAccounts,
+            maxRefreshingIds
+        } = await this.store.loadConfig();
+
         await this.mint.refreshAndWaitIfNeeded({
-            doneRefreshing: doneRefreshing
+            doneRefreshing: doneRefreshing.bind(doneRefreshing,
+                unrelatedAccounts, maxRefreshingIds),
         });
     }
 
@@ -77,6 +75,13 @@ class SpendableService extends EventEmitter {
     }
 
     async calculate() {
+        const config = await this.store.loadConfig();
+        const {
+            definiteCategories,
+            goalCategories,
+            ignoredRollover,
+        } = config;
+
         const budgets = this.budgets;
 
         const budgeted = budgets.spending.map(b => b.bgt)

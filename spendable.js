@@ -10,9 +10,11 @@ if (process.argv.indexOf("--test") === -1) {
 }
 
 const { SpendableUI } = require('./src/ui');
+const { JsonStore } = require('./src/store/json-store');
 
-// create and the service and UI
-const SERVICE = new SpendableService();
+// create and the store, the service, and the UI
+const STORE = new JsonStore();
+const SERVICE = new SpendableService(STORE);
 const UI = new SpendableUI();
 
 // init the service
