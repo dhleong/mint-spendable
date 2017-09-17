@@ -122,6 +122,17 @@ class MainUI extends EventEmitter {
             tags: true,
         });
 
+        /** 10% slop; half on either side */
+        const slop = b.inferredSpendablePerDay * .05;
+        let spendingColor;
+        if (b.avgSpending <= b.inferredSpendablePerDay - slop) {
+            spendingColor = "green-fg";
+        } else if (b.avgSpending <= b.inferredSpendablePerDay + slop) {
+            spendingColor = "yellow-fg";
+        } else {
+            spendingColor = "red-fg";
+        }
+
         const spendableContents =
             ` Inferred spendable: ${fmt$(b.inferredSpendable)}\n` +
             `            per day: ${fmt$(b.inferredSpendablePerDay)}\n` +
@@ -129,7 +140,7 @@ class MainUI extends EventEmitter {
 
             `  Spendable per day: {bold}${fmt$(b.spendablePerDay)}{/bold}\n` +
             `                     (${b.remainingDays}/${b.monthDays} days left)\n` +
-            `   Average spending: ${fmt$(b.avgSpending)}`;
+            `   Average spending: {${spendingColor}}${fmt$(b.avgSpending)}{/${spendingColor}}`;
 
         blessed.Text({
             parent: box,
