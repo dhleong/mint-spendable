@@ -43,7 +43,9 @@ class JsonStore extends Store {
     }
 
     async loadCredentials() {
-        return this.loadConfig();
+        const config = await this.loadConfig();
+        if (!(config && config.username && config.password)) return;
+        return config;
     }
 
     async saveCredentials(credentials) {

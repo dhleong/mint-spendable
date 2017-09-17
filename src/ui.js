@@ -2,6 +2,7 @@
 const { EventEmitter } = require('events');
 const blessed = require('blessed');
 
+const { LoginUI } = require('./ui/login');
 const { MainUI } = require('./ui/main');
 const { TransactionsUI } = require('./ui/transactions');
 
@@ -108,6 +109,7 @@ class SpendableUI extends EventEmitter {
         screen.render();
 
         this._ui = {
+            login: new LoginUI(screen),
             main: new MainUI(screen),
             transactions: new TransactionsUI(screen),
         };
@@ -141,6 +143,11 @@ class SpendableUI extends EventEmitter {
             this._ui.main.setBudget(b);
         }
         this._ui.main.show();
+    }
+
+    async showLogin() {
+        this._ui.login.show();
+        return await this._ui.login.awaitLogin();
     }
 
     showTransactions(category, transactions) {

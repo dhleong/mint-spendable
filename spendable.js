@@ -14,8 +14,14 @@ const { JsonStore } = require('./src/store/json-store');
 
 // create and the store, the service, and the UI
 const STORE = new JsonStore();
-const SERVICE = new SpendableService(STORE);
 const UI = new SpendableUI();
+const SERVICE = new SpendableService(STORE, async () => {
+    UI.setLoading(false);
+    const creds = await UI.showLogin();
+
+    UI.setLoading("Signing in…");
+    return creds;
+});
 
 // init the service
 var firstNotification = true;
