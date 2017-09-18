@@ -85,6 +85,7 @@ class LoginUI {
             height: 3,
 
             name: 'password',
+            censor: true,
 
             inputOnFocus: true,
 
