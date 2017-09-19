@@ -23,8 +23,14 @@ function listToMap(l) {
 }
 
 class JsonStore extends Store {
+    constructor(configFile = CONFIG_FILE) {
+        super();
+
+        this.configFile = configFile;
+    }
+
     async loadConfig() {
-        const config = JSON.parse(await readFile(CONFIG_FILE));
+        const config = JSON.parse(await readFile(this.configFile));
 
         const definiteCategories = listToMap(config.definiteCategories);
         /** goal categories are ignored in unbudgeted spending */
@@ -62,10 +68,12 @@ class JsonStore extends Store {
         };
 
         try {
-            await writeFile(CONFIG_FILE, JSON.stringify(creds));
+            await writeFile(this.configFile, JSON.stringify(creds));
         } catch (e) {
             console.warn("Unable to save cookies!");
         }
+
+        return true;
     }
 }
 

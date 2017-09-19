@@ -10,10 +10,15 @@ if (process.argv.indexOf("--test") === -1) {
 }
 
 const { SpendableUI } = require('./src/ui');
+const { CompositeStore } = require('./src/store/composite-store');
 const { JsonStore } = require('./src/store/json-store');
+const { KeychainStore } = require('./src/store/keychain-store');
 
 // create and the store, the service, and the UI
-const STORE = new JsonStore();
+const STORE = new CompositeStore(
+    new KeychainStore(),
+    new JsonStore(),
+);
 const UI = new SpendableUI();
 const SERVICE = new SpendableService(STORE, async () => {
     UI.setLoading(false);
