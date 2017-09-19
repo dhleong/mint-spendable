@@ -27,7 +27,9 @@ function autoInput(textarea) {
 }
 
 function validatePassword(password) {
-    if (!(password && password.length)) return true;
+    if (!(password && password.length)) {
+        return "Password is required";
+    }
 
     if (password.length < 6) {
         return "Passwords must be at least 6 characters";
@@ -39,7 +41,9 @@ function validatePassword(password) {
 }
 
 function validateUsername(username) {
-    if (!(username && username.length)) return true;
+    if (!(username && username.length)) {
+        return "Username is required";
+    }
 }
 
 class LoginUI {
@@ -138,9 +142,24 @@ class LoginUI {
         }));
         password.on('submit', () => form.submit());
 
-        blessed.Button({
+        this._errors = blessed.Box({
             parent: form,
             top: 10,
+            left: 2,
+            right: 2,
+            height: 1,
+
+            align: 'center',
+            content: '',
+
+            style: {
+                fg: 'red',
+            },
+        });
+
+        blessed.Button({
+            parent: form,
+            top: 12,
             left: 'center',
             shrink: true,
 
@@ -170,27 +189,38 @@ class LoginUI {
 
     _validate(data) {
         var dirty = false;
-        const userError = validateUsername(data.username);
-        if (userError) {
-            this._username.style.border.fg = 'red';
-            this._username.focus();
-            dirty = true;
-        }
+        this._errors.setContent('');
 
-        const passError = validatePassword(data.password);
-        if (passError) {
-            this._password.style.border.fg = 'red';
-            if (!dirty) {
-                dirty = true;
-                this._password.focus();
-            }
-        }
+        dirty = this._checkError(dirty, this._username,
+            validateUsername(data.username)
+        );
+
+        dirty = this._checkError(dirty, this._password,
+            validatePassword(data.password)
+        );
 
         if (dirty) {
             this.screen.render();
         }
 
         return !dirty;
+    }
+
+    _checkError(dirty, formElement, errorMessage) {
+        if (errorMessage) {
+            formElement.style.border.fg = 'red';
+            if (!dirty) {
+                dirty = true;
+                formElement.focus();
+
+            }
+
+            if (this._errors.getContent() === '') {
+                this._errors.setContent(errorMessage);
+            }
+        }
+
+        return dirty;
     }
 }
 
