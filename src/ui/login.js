@@ -15,15 +15,21 @@ function autoInput(textarea) {
         }
     });
     textarea.on('click', () => {
-        if (!textarea.focused) {
-            textarea.focus();
-        }
+        // focus next tick to avoid creating duplicate
+        // input reading
+        process.nextTick(() => safeFocus(textarea));
     });
     textarea.on('submit', () => {
-        textarea.emit('blur')
         textarea.parent.submit();
     });
     return textarea;
+}
+
+function safeFocus(element) {
+    if (!element.focused && element.screen.focused !== element) {
+        element.focus();
+        element.screen.render();
+    }
 }
 
 function validatePassword(password) {
@@ -115,7 +121,7 @@ class LoginUI {
             height: 1,
 
             content: "Username",
-        }).on('click', () => username.focus());
+        }).on('click', () => safeFocus(username));
 
         blessed.Text({
             parent: form,
@@ -141,6 +147,8 @@ class LoginUI {
             },
         }));
         password.on('submit', () => form.submit());
+        // password.on('focus', () => username.emit('blur'));
+        // username.on('focus', () => password.emit('blur'));
 
         this._errors = blessed.Box({
             parent: form,
@@ -177,7 +185,7 @@ class LoginUI {
         this.screen.append(box);
         this.screen.render();
 
-        username.focus();
+        safeFocus(username);
     }
 
     awaitLogin() {
@@ -211,8 +219,7 @@ class LoginUI {
             formElement.style.border.fg = 'red';
             if (!dirty) {
                 dirty = true;
-                formElement.focus();
-
+                process.nextTick(() => safeFocus(formElement));
             }
 
             if (this._errors.getContent() === '') {
