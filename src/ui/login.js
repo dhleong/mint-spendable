@@ -4,14 +4,16 @@
 
 const blessed = require('blessed');
 
-function autoInput(textarea) {
+function autoInput(loginUi, textarea) {
     textarea.on('focus', () => {
         textarea.readInput();
     });
     textarea.on('keypress', () => {
         if (textarea.style.border.fg !== 'black') {
             textarea.style.border.fg = 'black';
-            textarea.screen.render();
+
+            // just go ahead and clear the error
+            loginUi._errors.setContent('');
         }
     });
     textarea.on('click', () => {
@@ -75,7 +77,7 @@ class LoginUI {
 
         const form = new blessed.Form({
             parent: box,
-            keys: true,
+            // keys: true,
             align: 'center',
             top: 'center',
             left: 'center',
@@ -86,6 +88,10 @@ class LoginUI {
             tags: true,
         });
         form.on('submit', data => {
+            // focus on the button so that we can later
+            // safely move focus back onto any problematic fields
+            form.children[form.children.length - 1].focus();
+
             // do this on the next tick so keypress handling
             // happens first (IE: color changes from validation
             // aren't stepped on by keypress events)
@@ -100,7 +106,7 @@ class LoginUI {
             });
         });
 
-        const username = this._username = autoInput(blessed.Textbox({
+        const username = this._username = autoInput(this, blessed.Textbox({
             parent: form,
             top: 3,
             left: 10,
@@ -132,7 +138,7 @@ class LoginUI {
 
             content: "Password",
         });
-        const password = this._password = autoInput(blessed.Textbox({
+        const password = this._password = autoInput(this, blessed.Textbox({
             parent: form,
             top: 6,
             left: 10,
@@ -147,8 +153,15 @@ class LoginUI {
             },
         }));
         password.on('submit', () => form.submit());
-        // password.on('focus', () => username.emit('blur'));
-        // username.on('focus', () => password.emit('blur'));
+
+        // manually handle tab order
+        // (the built-in behavior is weird right now)
+        username.on('keypress', (_, key) => {
+            if (key.name === 'tab') password.focus();
+        });
+        password.on('keypress', (_, key) => {
+            if (key.name === 'tab') username.focus();
+        });
 
         this._errors = blessed.Box({
             parent: form,
