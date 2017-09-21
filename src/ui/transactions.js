@@ -45,6 +45,7 @@ class TransactionsUI extends EventEmitter {
             align: 'center',
             top: -1,
             left: 'center',
+            width: category.category.length + 2,
             content: ` ${category.category} `,
         });
 
