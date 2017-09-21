@@ -192,6 +192,7 @@ class MainUI extends EventEmitter {
             inverse: true
         };
         categories.on('select', (item, index) => {
+            this._savedCategory = index;
             const category = tableIndexToCategory(
                 categoryNameToItems, rows, index);
             if (category) {
@@ -206,6 +207,11 @@ class MainUI extends EventEmitter {
     show() {
         this.categories.focus();
         this.screen.append(this.box);
+
+        if (this._savedCategory !== undefined) {
+            this.categories.select(this._savedCategory);
+        }
+
         this.screen.render();
     }
 
