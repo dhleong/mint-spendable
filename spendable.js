@@ -53,6 +53,10 @@ UI.on('show-category-transactions', async category => {
     }
 });
 
+UI.on('edit-transaction', transaction => {
+    UI.showEditTransaction(transaction);
+});
+
 UI.on('back', () => {
     UI.showBudget();
 });

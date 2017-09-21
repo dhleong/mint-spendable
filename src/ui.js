@@ -5,6 +5,13 @@ const blessed = require('blessed');
 const { LoginUI } = require('./ui/login');
 const { MainUI } = require('./ui/main');
 const { TransactionsUI } = require('./ui/transactions');
+const { TxnUI } = require('./ui/txn');
+
+const UI_EVENTS = {
+    main: ['show-category-transactions'],
+    transactions: ['back', 'edit-transaction'],
+    txn: ['close-transaction'],
+};
 
 function count(text, targetChar) {
     let start = -1;
@@ -112,15 +119,20 @@ class SpendableUI extends EventEmitter {
             login: new LoginUI(screen),
             main: new MainUI(screen),
             transactions: new TransactionsUI(screen),
+            txn: new TxnUI(screen),
         };
 
-        // forward events: (is there a better way?)
-        this._ui.main.on('show-category-transactions', (...args) => {
-            this.emit('show-category-transactions', ...args);
-        });
-        this._ui.transactions.on('back', () => {
-            this.emit('back');
-        });
+        // forward any events
+        for (const event of Object.keys(UI_EVENTS)) {
+            const ui = this._ui[event];
+            const events = UI_EVENTS[event];
+
+            for (const event of events) {
+                ui.on(event, (...args) =>
+                    this.emit(event, ...args)
+                );
+            }
+        }
     }
 
     setLoading(status) {
@@ -143,6 +155,10 @@ class SpendableUI extends EventEmitter {
             this._ui.main.setBudget(b);
         }
         this._ui.main.show();
+    }
+
+    showEditTransaction(transaction) {
+        this._ui.txn.show(transaction);
     }
 
     async showLogin() {

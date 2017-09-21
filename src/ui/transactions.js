@@ -60,9 +60,9 @@ class TransactionsUI extends EventEmitter {
             inverse: true
         };
 
-        table.on('select', (item, index) => {
+        table.on('select', (_, index) => {
             this._savedIndex = index;
-            this.emit('edit-transaction', item);
+            this.emit('edit-transaction', transactions[index]);
         });
 
         // TODO can we override `q` to go back as well?
