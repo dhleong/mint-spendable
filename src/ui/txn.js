@@ -35,6 +35,10 @@ class TxnUI extends EventEmitter {
 
             content: JSON.stringify(txn, null, '  '),
         });
+        box.key('backspace', () =>
+            this.emit('close-transaction', txn)
+        );
+        box.focus();
 
         // TODO
 

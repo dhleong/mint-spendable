@@ -161,6 +161,10 @@ class SpendableUI extends EventEmitter {
         this._ui.txn.show(transaction);
     }
 
+    hideEditTransaction() {
+        this._ui.txn.hide();
+    }
+
     async showLogin() {
         this._ui.login.show();
         return await this._ui.login.awaitLogin();

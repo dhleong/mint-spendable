@@ -56,6 +56,9 @@ UI.on('show-category-transactions', async category => {
 UI.on('edit-transaction', transaction => {
     UI.showEditTransaction(transaction);
 });
+UI.on('close-transaction', () => {
+    UI.hideEditTransaction();
+});
 
 UI.on('back', () => {
     UI.showBudget();
