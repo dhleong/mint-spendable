@@ -40,16 +40,7 @@ class TransactionsUI extends EventEmitter {
             },
         });
 
-        blessed.Text({
-            parent: box,
-            align: 'center',
-            top: -1,
-            left: 'center',
-            width: category.category.length + 2,
-            content: ` ${category.category} `,
-        });
-
-        blessed.ListTable({
+        const table = blessed.ListTable({
             parent: box,
             align: 'left',
             left: 1,
@@ -58,13 +49,37 @@ class TransactionsUI extends EventEmitter {
             bottom: 1,
             rows: [headers].concat(rows),
             tags: true,
+
+            keys: true,
+            mouse: true,
+            vi: true,
+        });
+
+        // manually set since otherwise it's ignored
+        table.style.selected = {
+            inverse: true
+        };
+
+        table.on('select', (item, index) => {
+            this._savedIndex = index;
+            this.emit('edit-transaction', item);
         });
 
         // TODO can we override `q` to go back as well?
-        box.key('backspace', () => {
+        table.key('backspace', () => {
             this.emit('back');
         });
-        box.focus();
+        table.focus();
+
+        const header = blessed.Text({
+            parent: box,
+            align: 'center',
+            top: -1,
+            left: 'center',
+            width: category.category.length + 2,
+            content: ` ${category.category} `,
+        });
+        header.setFront();
 
         this.screen.append(box);
         this.screen.render();
