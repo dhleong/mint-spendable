@@ -25,6 +25,10 @@ class SpendableService extends EventEmitter {
         this.requestCredentials = requestCredentials;
     }
 
+    async editTransaction(txn) {
+        await this.mint.editTransaction(txn);
+    }
+
     async login() {
         let creds = await this.store.loadCredentials();
         let neededCreds = false;
