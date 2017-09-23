@@ -61,8 +61,10 @@ class TransactionsUI extends EventEmitter {
         };
 
         table.on('select', (_, index) => {
+            // NOTE: `index` includes the header row,
+            // so we subtract one when emitting the event
             this._savedIndex = index;
-            this.emit('edit-transaction', transactions[index]);
+            this.emit('edit-transaction', transactions[index - 1]);
         });
 
         // TODO can we override `q` to go back as well?
