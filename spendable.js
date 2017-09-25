@@ -61,6 +61,17 @@ UI.on('close-transaction', () => {
     UI.hideEditTransaction();
 });
 
+UI.on('update-transaction', async txn => {
+    try {
+        UI.setActivity("Updating Transaction");
+
+        await SERVICE.editTransaction(txn);
+        UI.setActivity(false);
+    } catch (e) {
+        UI.reportError(e);
+    }
+});
+
 UI.on('back', () => {
     UI.showBudget();
 });

@@ -206,11 +206,12 @@ class TxnUI extends EventEmitter {
             category.select(initial);
         }
         category.on('select', newCategory => {
-            // TODO update
-            console.log(newCategory);
+            txn.categoryId = newCategory.id;
+            txn.category = newCategory.value;
+            this.emit('update-transaction', txn);
         });
 
-        // TODO
+        // TODO rename
 
         this.screen.append(box);
         this.screen.render();
@@ -218,6 +219,10 @@ class TxnUI extends EventEmitter {
 
     hide() {
         if (this.box) this.box.detach();
+    }
+
+    setActivity(/* activity */) {
+        // TODO
     }
 
     _findCategoryIndex(categoryId) {

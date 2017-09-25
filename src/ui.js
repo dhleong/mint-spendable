@@ -1,6 +1,7 @@
 
 const { EventEmitter } = require('events');
 const blessed = require('blessed');
+const { IndefiniteProgressBox } = require('./ui/widgets');
 
 const { LoginUI } = require('./ui/login');
 const { MainUI } = require('./ui/main');
@@ -10,7 +11,7 @@ const { TxnUI } = require('./ui/txn');
 const UI_EVENTS = {
     main: ['show-category-transactions'],
     transactions: ['back', 'edit-transaction'],
-    txn: ['close-transaction'],
+    txn: ['close-transaction', 'update-transaction'],
 };
 
 function count(text, targetChar) {
@@ -29,14 +30,6 @@ class Loader extends blessed.Box {
 
         this.minHeight = options.minHeight || 2;
 
-        this._.icons = [
-            '⠄', '⠆', '⠇', '⠋',
-            '⠉',
-            '⠈', '⠘', '⠸', '⠴',
-            '⠤',
-        ];
-        this._.iconIndex = 0;
-
         this._.text = new blessed.Box({
             parent: this,
             align: 'center',
@@ -44,16 +37,11 @@ class Loader extends blessed.Box {
             right: 4,
             height: 1,
         });
-        this._.icon = new blessed.Text({
+        this._.icon = new IndefiniteProgressBox({
             parent: this,
-            align: 'center',
             top: 2,
             left: 'center',
-            height: 1,
-            content: this._.icons[0],
         });
-
-        this.on('destroy', () => this.stop());
     }
 
     load(text) {
@@ -62,28 +50,14 @@ class Loader extends blessed.Box {
         this._.text.height = lines + 1;
         this.height = lines + 2;
 
-        if (!this.hidden) this.stop();
+        this._.icon.show();
         this.show();
         this._.text.setContent(text);
-
-        if (this._.timer) {
-            this.stop();
-        }
-
-        this._.timer = setInterval(() => {
-            this._.iconIndex = ++this._.iconIndex % this._.icons.length;
-            this._.icon.setContent(this._.icons[this._.iconIndex]);
-            this.screen.render();
-        }, 100);
     }
 
     stop() {
         this.hide();
-        if (this._.timer) {
-            clearInterval(this._.timer);
-            delete this._.timer;
-        }
-        this.screen.render();
+        this._.icon.stop();
     }
 }
 
@@ -135,6 +109,12 @@ class SpendableUI extends EventEmitter {
         }
     }
 
+    setActivity(status) {
+        if (this._activeUI && this._activeUI.setActivity) {
+            this._activeUI.setActivity(status);
+        }
+    }
+
     setLoading(status) {
         if (!status) {
             this.loader.stop();
@@ -155,14 +135,17 @@ class SpendableUI extends EventEmitter {
             this._ui.main.setBudget(b);
         }
         this._ui.main.show();
+        this._activeUI = this._ui.main;
     }
 
     showEditTransaction(categories, transaction) {
         this._ui.txn.show(categories, transaction);
+        this._activeUI = this._ui.txn;
     }
 
     hideEditTransaction() {
         this._ui.txn.hide();
+        this._activeUI = this._ui.transactions;
     }
 
     async showLogin() {
@@ -172,6 +155,7 @@ class SpendableUI extends EventEmitter {
 
     showTransactions(category, transactions) {
         this._ui.transactions.showTransactions(category, transactions);
+        this._activeUI = this._ui.transactions;
     }
 
     reportError(e) {
