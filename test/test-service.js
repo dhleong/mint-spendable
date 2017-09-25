@@ -144,6 +144,48 @@ class TestSpendableService extends EventEmitter {
             ],
         }
     }
+
+    getCategories() {
+        // TODO do we need to reformat these instead of relying
+        // on the mint format?
+        return [
+            {
+                value: "Bills & Utilities",
+                id: 13,
+                children: [
+                    {
+                        id: 1304,
+                        value: "Mobile Phone",
+                    },
+                    {
+                        id: 1306,
+                        value: "Utilities",
+                    }
+                ],
+            },
+
+            {
+                value: "Food & Dining",
+                id: 7,
+                children: [
+                    {
+                        id: 704,
+                        value: "Coffee Shops",
+                    },
+
+                    {
+                        id: 701,
+                        value: "Groceries",
+                    },
+
+                    {
+                        id: 707,
+                        value: "Restaurants",
+                    },
+                ],
+            }
+        ];
+    }
 }
 
 module.exports = {

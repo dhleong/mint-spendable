@@ -61,6 +61,10 @@ class SpendableService extends EventEmitter {
 
     async loadBudgets() {
         this.budgets = await this.mint.getBudgets();
+
+        // load these eagerly since getCategories() has to return
+        // instantly
+        this.categories = await this.mint.categories();
     }
 
     async loadTransactions(category, offset=0) {
@@ -169,6 +173,9 @@ class SpendableService extends EventEmitter {
         }
     }
 
+    getCategories() {
+        return this.categories;
+    }
 }
 
 module.exports = {

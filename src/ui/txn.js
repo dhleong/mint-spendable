@@ -23,6 +23,28 @@ function describeFixed(txn) {
         `\n\n${txn.date}\n{bold}${txn.amount}{/bold}`;
 }
 
+function categoriesToList(raw) {
+    const list = [];
+
+    for (const major of raw) {
+        list.push({
+            id: major.id,
+            value: major.value,
+            content: `{bold}${major.value}{/bold}`,
+        });
+
+        for (const minor of major.children) {
+            list.push({
+                id: minor.id,
+                value: minor.value,
+                content: `  ${minor.value}`,
+            });
+        }
+    }
+
+    return list;
+}
+
 class Spinner extends blessed.Button {
     constructor(options) {
         super({
@@ -33,13 +55,63 @@ class Spinner extends blessed.Button {
 
         this.selected = options.selected || 0;
         this.items = options.items;
-        this._updateContent();
+        this._.lastItemsLength = -1;
+
+        this._.pickerBox = new blessed.Box({
+            parent: options.parent,
+
+            top: options.top,
+            left: options.left,
+            // height: 7, // TODO options?
+
+            ...INPUT_STYLE
+        });
+        this._.picker = new blessed.List({
+            parent: this._.pickerBox,
+
+            keys: true,
+            mouse: true,
+            vi: true,
+
+            tags: true,
+            style: {
+                selected: {
+                    bg: 'black',
+                    fg: 'bright-white',
+                }
+            }
+        });
+        this._.picker.on('select', (_, index) => this.select(index));
+        this._.pickerBox.hide();
 
         this.on('press', () => this._showSelect());
+
+        this._updateContent();
+    }
+
+    select(index) {
+        if (index < 0 || index >= this.items.length) {
+            throw new Error(`Attempt to select invalid index ${index}`);
+        }
+
+        this.selected = index;
+        this._updateContent();
+
+        if (this._.pickerBox.visible) {
+            this._.pickerBox.hide();
+
+            // only emit the event if NOT triggered programmatically
+            // (IE: while the picker box is visible)
+            this.emit('select', this.items[index], index);
+        }
     }
 
     _updateContent() {
         this.setContent(this._contentOf(this.items[this.selected]));
+
+        if (this.items.length !== this._.lastItemsLength) {
+            this._.picker.setItems(this.items.map(it => it.content));
+        }
     }
 
     _contentOf(item) {
@@ -49,7 +121,8 @@ class Spinner extends blessed.Button {
     }
 
     _showSelect() {
-        // TODO
+        this._.pickerBox.show();
+        this._.picker.focus();
     }
 }
 
@@ -61,9 +134,13 @@ class TxnUI extends EventEmitter {
         this.screen = screen;
     }
 
-    show(txn) {
+    show(categories, txn) {
         this.hide();
         this._txn = txn;
+
+        if (!this._categories) {
+            categories = this._categories = categoriesToList(categories);
+        }
 
         const box = this.box = new blessed.Box({
             align: 'center',
@@ -120,25 +197,16 @@ class TxnUI extends EventEmitter {
             mouse: true,
             tags: true,
 
-            // TODO categories
-            items: [
-                {
-                    id: 707,
-                    content: "{bold}Bills & Utilities{/bold}",
-                },
-                {
-                    id: 708,
-                    content: "{bold}Food & Dining{/bold}",
-                },
-                {
-                    id: 709,
-                    content: "  Restaurants",
-                },
-            ],
+            items: this._categories,
 
             ...INPUT_STYLE,
         });
+        const initial = this._findCategoryIndex(txn.categoryId);
+        if (initial !== -1) {
+            category.select(initial);
+        }
         category.on('select', newCategory => {
+            // TODO update
             console.log(newCategory);
         });
 
@@ -150,6 +218,17 @@ class TxnUI extends EventEmitter {
 
     hide() {
         if (this.box) this.box.detach();
+    }
+
+    _findCategoryIndex(categoryId) {
+        const len = this._categories.length;
+        for (let i=0; i < len; ++i) {
+            if (this._categories[i].id === categoryId) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
 }

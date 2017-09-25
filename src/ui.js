@@ -157,8 +157,8 @@ class SpendableUI extends EventEmitter {
         this._ui.main.show();
     }
 
-    showEditTransaction(transaction) {
-        this._ui.txn.show(transaction);
+    showEditTransaction(categories, transaction) {
+        this._ui.txn.show(categories, transaction);
     }
 
     hideEditTransaction() {

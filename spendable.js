@@ -54,7 +54,8 @@ UI.on('show-category-transactions', async category => {
 });
 
 UI.on('edit-transaction', transaction => {
-    UI.showEditTransaction(transaction);
+    const categories = SERVICE.getCategories();
+    UI.showEditTransaction(categories, transaction);
 });
 UI.on('close-transaction', () => {
     UI.hideEditTransaction();
