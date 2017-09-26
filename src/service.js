@@ -67,18 +67,32 @@ class SpendableService extends EventEmitter {
         this.categories = await this.mint.categories();
     }
 
-    async loadTransactions(category, offset=0) {
+    async loadTransactions(category, options={}) {
+        const opts = {
+            offset: 0,
+            strict: false,
+
+            ...options,
+        };
         const now = new Date();
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         const transactions = await this.mint.getTransactions({
             category: category.cat,
-            offset,
+            offset: opts.offset,
             startDate: firstDay,
             endDate: lastDay,
         });
 
-        // TODO do we need to do anything to it?
+        // TODO do we need to do anything to transactions?
+
+        if (opts.strict) {
+            // when fetching for a parent category like Food & Dining, we also
+            //  get child category transactions; for unbudgeted transactions,
+            //  those are broken out as separate budgets, so we might not want that
+            return transactions.filter(txn => txn.categoryId === category.cat);
+        }
+
         return transactions;
     }
 

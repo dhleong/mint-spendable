@@ -41,10 +41,16 @@ SERVICE.on('refreshing', accounts => {
 });
 
 // init the UI
-UI.on('show-category-transactions', async category => {
+UI.on('show-category-transactions', async (kind, category) => {
     UI.setLoading("Loading transactions...");
     try {
-        const transactions = await SERVICE.loadTransactions(category);
+        // only be strict about the category for unbudgeted items,
+        // since those are each handled separately; budgeted categories
+        // *may* include everything in a generic category
+        const opts = {
+            strict: (kind === 'unbudgetedItems'),
+        };
+        const transactions = await SERVICE.loadTransactions(category, opts);
         UI.showTransactions(category, transactions);
     } catch (e) {
         // probably, session timed out error. We could possibly

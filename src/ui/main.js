@@ -37,7 +37,11 @@ function tableIndexToCategory(categoryNameToItems, rows, index) {
         throw new Error("No category called" + header);
     }
 
-    return items[offset];
+    // calculate the category kind
+    const category = CATEGORY_KINDS.find(cat => cat[1] === header);
+    const kind = category[0];
+
+    return [kind, items[offset]];
 }
 
 class MultiHeaderListTable extends blessed.ListTable {
@@ -193,10 +197,10 @@ class MainUI extends EventEmitter {
         };
         categories.on('select', (item, index) => {
             this._savedCategory = index;
-            const category = tableIndexToCategory(
+            const [key, category] = tableIndexToCategory(
                 categoryNameToItems, rows, index);
             if (category) {
-                this._onCategorySelected(category);
+                this._onCategorySelected(key, category);
             } else {
                 // TODO it was a header; deselect it (?)
             }
@@ -230,8 +234,8 @@ class MainUI extends EventEmitter {
         };
     }
 
-    _onCategorySelected(category) {
-        this.emit('show-category-transactions', category);
+    _onCategorySelected(kind, category) {
+        this.emit('show-category-transactions', kind, category);
     }
 }
 
