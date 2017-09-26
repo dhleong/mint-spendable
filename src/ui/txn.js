@@ -103,6 +103,9 @@ class Spinner extends blessed.Button {
             // only emit the event if NOT triggered programmatically
             // (IE: while the picker box is visible)
             this.emit('select', this.items[index], index);
+
+            // restore focus back where it belongs
+            this.screen.restoreFocus();
         }
     }
 
@@ -209,6 +212,9 @@ class TxnUI extends EventEmitter {
             txn.categoryId = newCategory.id;
             txn.category = newCategory.value;
             this.emit('update-transaction', txn);
+
+            // user has finished with the spinner; re-focus
+            box.focus();
         });
 
         // TODO rename
