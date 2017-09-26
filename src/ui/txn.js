@@ -82,6 +82,10 @@ class Spinner extends blessed.Button {
             }
         });
         this._.picker.on('select', (_, index) => this.select(index));
+        this._.picker.key(['esc', 'backspace'], () =>
+            // cancel changes by just selecting the currently-selected
+            this.select(this.selected)
+        );
         this._.pickerBox.hide();
 
         this.on('press', () => this._showSelect());
@@ -170,6 +174,7 @@ class TxnUI extends EventEmitter {
         box.key('backspace', () =>
             this.emit('close-transaction', txn)
         );
+        box.key('c', () => this._changeCategory());
         box.focus();
 
         const top = 7;
@@ -189,7 +194,7 @@ class TxnUI extends EventEmitter {
         });
         merchant.setValue(txn.merchant);
 
-        const category = new Spinner({
+        const category = this._categorySpinner = new Spinner({
             parent: box,
 
             top: top + 3,
@@ -209,9 +214,11 @@ class TxnUI extends EventEmitter {
             category.select(initial);
         }
         category.on('select', newCategory => {
-            txn.categoryId = newCategory.id;
-            txn.category = newCategory.value;
-            this.emit('update-transaction', txn);
+            if (txn.categoryId !== newCategory.id) {
+                txn.categoryId = newCategory.id;
+                txn.category = newCategory.value;
+                this.emit('update-transaction', txn);
+            }
 
             // user has finished with the spinner; re-focus
             box.focus();
@@ -229,6 +236,10 @@ class TxnUI extends EventEmitter {
 
     setActivity(/* activity */) {
         // TODO
+    }
+
+    _changeCategory() {
+        this._categorySpinner.press();
     }
 
     _findCategoryIndex(categoryId) {
