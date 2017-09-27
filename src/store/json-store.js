@@ -16,6 +16,8 @@ function mapToList(m) {
 }
 
 function listToMap(l) {
+    if (!l) return {};
+
     return l.reduce((m, key) => {
         m[key] = true;
         return m;
@@ -62,13 +64,15 @@ class JsonStore extends Store {
 
             definiteCategories: mapToList(credentials.definiteCategories),
             goalCategories: mapToList(credentials.goalCategories),
-            ignoredRollover: mapToList(credentials.ignoredRollover),
+            ignoredRolloverCategories: mapToList(credentials.ignoredRollover),
             maxRefreshingIds: credentials.maxRefreshingIds,
             unrelatedAccounts: credentials.unrelatedAccounts,
         };
 
         try {
-            await writeFile(this.configFile, JSON.stringify(creds));
+            await writeFile(this.configFile,
+                JSON.stringify(creds, null, '  ')
+            );
         } catch (e) {
             console.warn("Unable to save cookies!");
         }

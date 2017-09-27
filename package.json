@@ -23,7 +23,7 @@
     "blessed": "^0.1.81",
     "keychain": "^1.3.0",
     "keytar": "^4.0.4",
-    "pepper-mint": "^1.5.4"
+    "pepper-mint": "^1.6.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",

@@ -2,6 +2,11 @@
 const { EventEmitter } = require('events');
 const PepperMint = require('pepper-mint');
 
+const FORWARDED_EVENTS = [
+    'refreshing',
+    'browser-login',
+];
+
 function doneRefreshing(unrelatedAccounts, maxRefreshingIds, accounts) {
     let remaining = accounts.length;
     if (unrelatedAccounts) {
@@ -37,14 +42,20 @@ class SpendableService extends EventEmitter {
             neededCreds = true;
         }
 
-        const mint = this.mint = await PepperMint(creds.username, creds.password, creds.cookie)
+        const promise = PepperMint(creds.username, creds.password, creds.cookie)
+        const mint = this.mint = promise.mint;
+        for (const event of FORWARDED_EVENTS) {
+            mint.on(event, (...args) => this.emit(event, ...args));
+        }
+
+        // now await the promise
+        await promise;
+
         if (neededCreds || !creds.cookie) {
             creds.cookie = `ius_session=${mint.sessionCookies.ius_session}; ` +
                 `thx_guid=${mint.sessionCookies.thx_guid};`;
             await this.store.saveCredentials(creds);
         }
-
-        mint.on('refreshing', ev => this.emit('refreshing', ev));
     }
 
     async refreshAndWait() {

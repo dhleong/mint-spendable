@@ -14,6 +14,14 @@ const { CompositeStore } = require('./src/store/composite-store');
 const { JsonStore } = require('./src/store/json-store');
 const { KeychainStore } = require('./src/store/keychain-store');
 
+const BROWSER_LOGIN_TITLE = "A browser was opened to help with initial auth";
+const BROWSER_LOGIN_MESSAGES = {
+    init: BROWSER_LOGIN_TITLE,
+    login: BROWSER_LOGIN_TITLE + "\nPlease finish logging in there",
+    cookies: BROWSER_LOGIN_TITLE + "\nAuthenticating…",
+    done: "Signing in…"
+};
+
 // create and the store, the service, and the UI
 const STORE = new CompositeStore(
     new KeychainStore(),
@@ -39,6 +47,11 @@ SERVICE.on('refreshing', accounts => {
         UI.setLoading("Still refreshing:\n"  + names.join(", "));
     }
 });
+SERVICE.on('browser-login', state =>
+    UI.setLoading(
+        BROWSER_LOGIN_MESSAGES[state]
+    )
+);
 
 // init the UI
 UI.on('show-category-transactions', async (kind, category) => {
