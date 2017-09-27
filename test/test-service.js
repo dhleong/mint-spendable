@@ -139,6 +139,11 @@ class TestSpendableService extends EventEmitter {
                     bgt: 1000.0,
                     amt: 346.51,
                 },
+                {
+                    category: "Auto & Transport",
+                    bgt: 500.0,
+                    amt: 777.0,
+                },
             ],
             unbudgetedItems: [
                 {

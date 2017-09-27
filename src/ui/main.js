@@ -173,7 +173,7 @@ class MainUI extends EventEmitter {
             const items = b[key];
             if (!Array.isArray(items) || !items.length) continue;
 
-            const category = this._makeCategory(name, items, moneyKey);
+            const category = this._makeCategory(key, name, items, moneyKey);
             categoryNameToItems[name] = category.items;
             rows = rows.concat(category.rows);
         }
@@ -223,11 +223,19 @@ class MainUI extends EventEmitter {
         if (this.box) this.box.detach();
     }
 
-    _makeCategory(name, items, moneyKey) {
+    _makeCategory(kind, name, items, moneyKey) {
         const header = `{bold}${name}{/bold}`;
-        const listRows = items.map(item =>
-            [' ' + item.category, fmt$(item[moneyKey])]
-        );
+        const listRows = items.map(item => {
+            const moneyFormatted = fmt$(item[moneyKey]);
+
+            // ONLY for budgetedSpending, if we overspent, colorize it.
+            // this is not a great way to do this, but it's simple for now
+            const money = (kind === 'budgetedSpendingItems' && item[moneyKey] > item.bgt)
+                ? `{red-fg}${moneyFormatted}{/red-fg}`
+                : moneyFormatted;
+
+            return [' ' + item.category, money];
+        });
         return {
             items,
             rows: [ [header] ].concat(listRows),
