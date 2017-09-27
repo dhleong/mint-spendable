@@ -5,6 +5,8 @@
 const { EventEmitter } = require('events');
 const blessed = require('blessed');
 
+const { IndefiniteProgressBox } = require('./widgets');
+
 const INPUT_STYLE = {
     style: {
         bg: 'black',
@@ -177,6 +179,15 @@ class TxnUI extends EventEmitter {
         box.key('c', () => this._changeCategory());
         box.focus();
 
+        this.loader = new IndefiniteProgressBox({
+            parent: box,
+            right: 1,
+            top: 0,
+
+            style: {
+                ...INPUT_STYLE.style
+            }
+        });
         const top = 7;
 
         const merchant = new blessed.Textbox({
@@ -234,8 +245,12 @@ class TxnUI extends EventEmitter {
         if (this.box) this.box.detach();
     }
 
-    setActivity(/* activity */) {
-        // TODO
+    setActivity(activity) {
+        if (activity) {
+            this.loader.show();
+        } else {
+            this.loader.hide();
+        }
     }
 
     _changeCategory() {

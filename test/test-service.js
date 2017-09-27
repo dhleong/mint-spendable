@@ -14,7 +14,7 @@ class TestSpendableService extends EventEmitter {
     }
 
     async editTransaction(/* txn */) {
-        await delay(BASE_DELAY);
+        await delay(BASE_DELAY * 2);
     }
 
     async refreshAndWait() {
