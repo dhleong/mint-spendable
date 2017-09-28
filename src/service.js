@@ -30,6 +30,11 @@ class SpendableService extends EventEmitter {
         this.requestCredentials = requestCredentials;
     }
 
+    isRelevantAccount(account) {
+        if (!this.unrelatedAccounts) return true;
+        return this.unrelatedAccounts.indexOf(account.name) === -1;
+    }
+
     async editTransaction(txn) {
         await this.mint.editTransaction(txn);
     }
@@ -63,6 +68,9 @@ class SpendableService extends EventEmitter {
             unrelatedAccounts,
             maxRefreshingIds
         } = await this.store.loadConfig();
+
+        // save for use in isRelevantAccount
+        this.unrelatedAccounts = unrelatedAccounts;
 
         await this.mint.refreshAndWaitIfNeeded({
             doneRefreshing: doneRefreshing.bind(doneRefreshing,

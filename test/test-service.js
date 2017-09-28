@@ -1,6 +1,6 @@
 
 const { EventEmitter } = require('events');
-const BASE_DELAY = 300;
+const BASE_DELAY = 3000;
 
 function delay(ms) {
     return new Promise(function(resolve) {
@@ -9,6 +9,11 @@ function delay(ms) {
 }
 
 class TestSpendableService extends EventEmitter {
+
+    isRelevantAccount(account) {
+        return account.name !== "The Captain's Mattress";
+    }
+
     async login() {
         await delay(BASE_DELAY);
     }
@@ -21,10 +26,10 @@ class TestSpendableService extends EventEmitter {
         await delay(BASE_DELAY * .5);
 
         this.emit('refreshing', [
+            {name: "The Captain's Mattress"},
             {name: "Serenity Independent Bank"},
             {name: "Outer Rim Credit Union"},
             {name: "The Cargo Hold"},
-            {name: "The Captain's Mattress"},
         ]);
 
         await delay(BASE_DELAY);

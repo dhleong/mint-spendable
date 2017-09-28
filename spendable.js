@@ -70,7 +70,9 @@ function reportErrors(asyncFn) {
 // init the service
 var firstNotification = true;
 SERVICE.on('refreshing', accounts => {
-    const names = accounts.map(it => it.name);
+    const names = accounts
+        .filter(SERVICE.isRelevantAccount.bind(SERVICE))
+        .map(it => it.name);
     if (firstNotification) {
         firstNotification = false;
         UI.setLoading("Refreshing accounts:\n" + names.join(", "));
