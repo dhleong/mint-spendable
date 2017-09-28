@@ -22,6 +22,10 @@ const BROWSER_LOGIN_MESSAGES = {
     done: "Signing in…"
 };
 
+const state = {
+    editedTransaction: false,
+};
+
 // create and the store, the service, and the UI
 const STORE = new CompositeStore(
     new KeychainStore(),
@@ -35,6 +39,33 @@ const SERVICE = new SpendableService(STORE, async () => {
     UI.setLoading("Signing in…");
     return creds;
 });
+
+async function refreshBudgetData() {
+    UI.setLoading("Fetching budgets…");
+    await SERVICE.loadBudgets();
+
+    UI.setLoading("Crunching the numbers…");
+    const budget = await SERVICE.calculate();
+    UI.setLoading(false);
+    UI.showBudget(budget);
+}
+
+/**
+ * Wrap an async function into a "regular"
+ *  promise-returning function that handles
+ *  errors by reporting them via the UI. Any
+ *  arguments received are passed along to the
+ *  provided function
+ */
+function reportErrors(asyncFn) {
+    return async (...args) => {
+        try {
+            await asyncFn(...args);
+        } catch (e) {
+            UI.reportError(e);
+        }
+    };
+}
 
 // init the service
 var firstNotification = true;
@@ -54,23 +85,18 @@ SERVICE.on('browser-login', state =>
 );
 
 // init the UI
-UI.on('show-category-transactions', async (kind, category) => {
+UI.on('show-category-transactions', reportErrors(async (kind, category) => {
     UI.setLoading("Loading transactions...");
-    try {
-        // only be strict about the category for unbudgeted items,
-        // since those are each handled separately; budgeted categories
-        // *may* include everything in a generic category
-        const opts = {
-            strict: (kind === 'unbudgetedItems'),
-        };
-        const transactions = await SERVICE.loadTransactions(category, opts);
-        UI.showTransactions(category, transactions);
-    } catch (e) {
-        // probably, session timed out error. We could possibly
-        // gracefully handle this by re-logging in....
-        UI.reportError(e);
-    }
-});
+
+    // only be strict about the category for unbudgeted items,
+    // since those are each handled separately; budgeted categories
+    // *may* include everything in a generic category
+    const opts = {
+        strict: (kind === 'unbudgetedItems'),
+    };
+    const transactions = await SERVICE.loadTransactions(category, opts);
+    UI.showTransactions(category, transactions);
+}));
 
 UI.on('edit-transaction', transaction => {
     const categories = SERVICE.getCategories();
@@ -80,35 +106,34 @@ UI.on('close-transaction', () => {
     UI.hideEditTransaction();
 });
 
-UI.on('update-transaction', async txn => {
-    try {
-        UI.setActivity("Updating Transaction");
+UI.on('update-transaction', reportErrors(async txn => {
+    UI.setActivity("Updating Transaction");
 
-        await SERVICE.editTransaction(txn);
-        UI.setActivity(false);
-    } catch (e) {
-        UI.reportError(e);
+    await SERVICE.editTransaction(txn);
+    UI.setActivity(false);
+
+    state.editedTransaction = true;
+}));
+
+UI.on('back', reportErrors(async () => {
+    if (state.editedTransaction) {
+        state.editedTransaction = false;
+
+        await refreshBudgetData();
+    } else {
+        UI.showBudget();
     }
-});
-
-UI.on('back', () => {
-    UI.showBudget();
-});
+}));
 
 // go!
-(async () => {
+reportErrors(async () => {
+
     UI.setLoading("Signing in…");
     await SERVICE.login();
 
     UI.setLoading("Checking if accounts need to be refreshed…");
     await SERVICE.refreshAndWait();
 
-    UI.setLoading("Fetching budgets…");
-    await SERVICE.loadBudgets();
+    await refreshBudgetData();
 
-    UI.setLoading("Crunching the numbers…");
-    const budget = await SERVICE.calculate();
-    UI.setLoading(false);
-    UI.showBudget(budget);
-
-})().catch(e => UI.reportError(e));
+})();
