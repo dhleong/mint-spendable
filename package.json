@@ -2,7 +2,9 @@
   "name": "mint-spendable",
   "version": "1.0.0",
   "description": "Check how much I can spend",
-  "main": "index.js",
+  "bin": {
+    "spendable": "./spendable.js"
+  },
   "scripts": {
     "test": "mocha test/**"
   },
