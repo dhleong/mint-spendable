@@ -8,21 +8,27 @@ chai.should();
 describe("tableIndexToCategory", () => {
     it('should work', function() {
         const map = {
-            "Fancy Ships": ['zero', 'one'],
-            "Mighty Fine Hats": ['ling', 'yi'],
+            "Inferred Spending": ['zero', 'one'],
+            "Budgeted Spending": ['ling', 'yi'],
         };
         const rows = [
-            ["Fancy Ships"],
+            ["Inferred Spending"],
             ['zero', 0], ['one', 1],
 
-            ["Mighty Fine Hats"],
+            ["Budgeted Spending"],
             ['ling', 0], ['yi', 1],
         ];
 
-        tableIndexToCategory(map, rows, 2).should.equal('one');
-        expect(tableIndexToCategory(map, rows, 3)).to.be.undefined;
+        tableIndexToCategory(map, rows, 2).should.deep.equal(
+            ['inferredSpendingItems', 'one']
+        );
+        expect(tableIndexToCategory(map, rows, 3)[1]).to.be.undefined;
 
-        tableIndexToCategory(map, rows, 4).should.equal('ling');
-        tableIndexToCategory(map, rows, 5).should.equal('yi');
+        tableIndexToCategory(map, rows, 4).should.deep.equal(
+            ['budgetedSpendingItems', 'ling']
+        );
+        tableIndexToCategory(map, rows, 5).should.deep.equal(
+            ['budgetedSpendingItems', 'yi']
+        );
     });
 });
