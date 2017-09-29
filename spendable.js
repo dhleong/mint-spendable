@@ -9,6 +9,8 @@ if (process.argv.indexOf("--test") === -1) {
     SpendableService = TestSpendableService;
 }
 
+const os = require('os');
+const path = require('path');
 const { SpendableUI } = require('./src/ui');
 const { CompositeStore } = require('./src/store/composite-store');
 const { JsonStore } = require('./src/store/json-store');
@@ -22,13 +24,37 @@ const BROWSER_LOGIN_MESSAGES = {
     done: "Signing in…"
 };
 
+/*
+ * State management
+ * TODO: probably just refactor this file into a Presenter class
+ */
 const state = {
     editedTransaction: false,
 };
 
+/*
+ * Init util
+ */
+
+function resolveHome(file) {
+    if (file[0] === '~' && (file.length < 1 || file[1] === path.sep)) {
+        return path.join(os.homedir(), file.substr(1));
+    } else if (file[0] === '~') {
+        throw new Error("~user syntax is not supported");
+    }
+
+    return file;
+}
+
+/*
+ * Init
+ */
+
 // create and the store, the service, and the UI
 const STORE = new CompositeStore(
     new KeychainStore(),
+    new JsonStore(resolveHome('~/.config/spendable/config.json')),
+    new JsonStore(resolveHome('~/.spendablerc.json')),
     new JsonStore(),
 );
 const UI = new SpendableUI();
