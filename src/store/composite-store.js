@@ -16,8 +16,10 @@ class CompositeStore extends Store {
     async loadConfig() {
         for (const choice of this.alternatives) {
             const result = await choice.loadConfig();
-            if (result) return result;
+            if (Object.keys(result).length) return result;
         }
+
+        return {};
     }
 
     async loadCredentials() {

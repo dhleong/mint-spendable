@@ -32,7 +32,15 @@ class JsonStore extends Store {
     }
 
     async loadConfig() {
-        const config = JSON.parse(await readFile(this.configFile));
+        let configContents;
+        try {
+            configContents = await readFile(this.configFile);
+        } catch (e) {
+            // couldn't read or otherwise doesn't exist
+            return {};
+        }
+
+        const config = JSON.parse(configContents);
 
         const definiteCategories = listToMap(config.definiteCategories);
         /** goal categories are ignored in unbudgeted spending */
@@ -41,13 +49,15 @@ class JsonStore extends Store {
         const maxRefreshingIds = config.maxRefreshingIds || 0;
         const unrelatedAccounts = config.unrelatedAccounts;
 
-        return Object.assign(config, {
+        return {
+            ...config,
+
             definiteCategories,
             goalCategories,
             ignoredRollover,
             maxRefreshingIds,
             unrelatedAccounts,
-        });
+        };
     }
 
     async loadCredentials() {

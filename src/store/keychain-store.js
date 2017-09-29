@@ -21,7 +21,7 @@ class KeychainStore extends Store {
 
     async loadConfig() {
         // KeyChain only stores credentials
-        return null;
+        return {};
     }
 
     async loadCredentials() {

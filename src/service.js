@@ -18,7 +18,7 @@ function doneRefreshing(unrelatedAccounts, maxRefreshingIds, accounts) {
         }
     }
 
-    return remaining <= maxRefreshingIds;
+    return remaining <= (maxRefreshingIds || 0);
 }
 
 class SpendableService extends EventEmitter {
@@ -213,4 +213,6 @@ class SpendableService extends EventEmitter {
 
 module.exports = {
     SpendableService,
+
+    doneRefreshing,
 };
