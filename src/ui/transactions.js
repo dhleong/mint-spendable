@@ -67,10 +67,7 @@ class TransactionsUI extends EventEmitter {
             this.emit('edit-transaction', transactions[index - 1]);
         });
 
-        // TODO can we override `q` to go back as well?
-        table.key('backspace', () => {
-            this.emit('back');
-        });
+        table.key(['q', 'escape', 'backspace'], () => this.emit('back'));
         table.focus();
 
         const header = blessed.Text({

@@ -205,6 +205,7 @@ class MainUI extends EventEmitter {
                 // TODO it was a header; deselect it (?)
             }
         });
+        categories.key(['q', 'escape'], () => this.emit('quit'));
         categories.focus();
     }
 

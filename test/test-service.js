@@ -1,6 +1,6 @@
 
 const { EventEmitter } = require('events');
-const BASE_DELAY = 3000;
+const BASE_DELAY = 300;
 
 function delay(ms) {
     return new Promise(function(resolve) {

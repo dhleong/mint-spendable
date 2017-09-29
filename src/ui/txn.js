@@ -84,7 +84,7 @@ class Spinner extends blessed.Button {
             }
         });
         this._.picker.on('select', (_, index) => this.select(index));
-        this._.picker.key(['esc', 'backspace'], () =>
+        this._.picker.key(['escape', 'backspace'], () =>
             // cancel changes by just selecting the currently-selected
             this.select(this.selected)
         );
@@ -173,7 +173,7 @@ class TxnUI extends EventEmitter {
             tags: true,
             content: describeFixed(txn),
         });
-        box.key('backspace', () =>
+        box.key(['q', 'escape', 'backspace'], () =>
             this.emit('close-transaction', txn)
         );
         box.key('c', () => this._changeCategory());

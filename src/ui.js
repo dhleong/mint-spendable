@@ -9,7 +9,7 @@ const { TransactionsUI } = require('./ui/transactions');
 const { TxnUI } = require('./ui/txn');
 
 const UI_EVENTS = {
-    main: ['show-category-transactions'],
+    main: ['quit', 'show-category-transactions'],
     transactions: ['back', 'edit-transaction'],
     txn: ['close-transaction', 'update-transaction'],
 };
@@ -73,8 +73,8 @@ class SpendableUI extends EventEmitter {
 
         screen.title = "Spendable";
 
-        // Quit on Control-C.
-        screen.key([/* 'escape', 'q', */ 'C-c'], () => {
+        // Always quit on Control-C.
+        screen.key(['C-c'], () => {
             return process.exit(0);
         });
 
@@ -118,10 +118,6 @@ class SpendableUI extends EventEmitter {
     setLoading(status) {
         if (!status) {
             this.loader.stop();
-
-            this.screen.key(['escape', 'q'], () => {
-                return process.exit(0);
-            });
         } else {
             for (const kind of Object.keys(this._ui)) {
                 this._ui[kind].hide();

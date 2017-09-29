@@ -127,6 +127,8 @@ UI.on('back', reportErrors(async () => {
     }
 }));
 
+UI.on('quit', () => process.exit(0));
+
 // go!
 reportErrors(async () => {
 
