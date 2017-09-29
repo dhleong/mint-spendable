@@ -1,4 +1,4 @@
-spendable [![npm](https://img.shields.io/npm/v/spendable.svg)](https://www.npmjs.com/package/spendable)
+spendable [![npm](https://img.shields.io/npm/v/mint-spendable.svg)](https://www.npmjs.com/package/mint-spendable)
 =========
 
 *Check how much you can spend*
