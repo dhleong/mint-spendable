@@ -1,4 +1,4 @@
-spendable
+spendable [![npm](https://img.shields.io/npm/v/spendable.svg)](https://www.npmjs.com/package/spendable)
 =========
 
 *Check how much you can spend*
@@ -17,7 +17,20 @@ goals.
 
 ## How
 
+```
+$ npm install -g mint-spendable
+$ spendable
+```
+
+### Configuration
+
 TK
+
+### Security
+
+Spendable attempts to securely store your credentials in the local keychain.
+If that fails for whatever reason, they may get stored in the Configuration
+JSON file (see above).
 
 ## Why
 
