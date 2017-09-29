@@ -117,11 +117,9 @@ class SpendableService extends EventEmitter {
 
     async calculate() {
         const config = await this.store.loadConfig();
-        const {
-            definiteCategories,
-            goalCategories,
-            ignoredRollover,
-        } = config;
+        const definiteCategories = config.definiteCategories || {};
+        const goalCategories = config.goalCategories || {};
+        const ignoredRollover = config.ignoredRollover || {};
 
         const budgets = this.budgets;
 
