@@ -47,6 +47,17 @@ function categoriesToList(raw) {
     return list;
 }
 
+class TextFilter {
+    constructor(filter) {
+        this.filter = filter.toLowerCase();
+    }
+
+    matches(text) {
+        // TODO fancier?
+        return text.toLowerCase().includes(this.filter);
+    }
+}
+
 class Spinner extends blessed.Button {
     constructor(options) {
         super({
@@ -58,6 +69,7 @@ class Spinner extends blessed.Button {
         this.selected = options.selected || 0;
         this.items = options.items;
         this._.lastItemsLength = -1;
+        this._.filter = "";
 
         this._.pickerBox = new blessed.Box({
             parent: options.parent,
@@ -84,10 +96,7 @@ class Spinner extends blessed.Button {
             }
         });
         this._.picker.on('select', (_, index) => this.select(index));
-        this._.picker.key(['escape', 'backspace'], () =>
-            // cancel changes by just selecting the currently-selected
-            this.select(this.selected)
-        );
+        this._.picker.on('keypress', this._onType.bind(this));
         this._.pickerBox.hide();
 
         this.on('press', () => this._showSelect());
@@ -115,11 +124,54 @@ class Spinner extends blessed.Button {
         }
     }
 
+    cancel() {
+        // cancel changes by just selecting the currently-selected
+        this.select(this.selected)
+    }
+
+    filter(text) {
+        if (this._.filter === text) return;
+
+        this._.filter = text;
+        this._.lastItemsLength = -1; // invalidate picker list
+        this._updateContent();
+    }
+
+    _onType(ch, key) {
+        if (key.name === 'escape' && this._.filter.length) {
+            this.filter('');
+            return;
+        } else if (key.name === 'escape') {
+            this.cancel();
+            return;
+        }
+
+        if (key.name === 'backspace' && !this._.filter.length) {
+            this.cancel();
+            return;
+        } else if (key.name === 'backspace') {
+            this.filter(this._.filter.substr(0, this._.filter.length - 1));
+            return;
+        }
+
+        if (!ch || !/[a-zA-Z &]/.test(ch)) {
+            // weird char?
+            return;
+        }
+
+        this.filter(this._.filter + ch);
+    }
+
     _updateContent() {
         this.setContent(this._contentOf(this.items[this.selected]));
 
         if (this.items.length !== this._.lastItemsLength) {
-            this._.picker.setItems(this.items.map(it => it.content));
+            const filter = new TextFilter(this._.filter);
+            this._.picker.setItems(
+                this.items
+                    .map(it => it.content)
+                    .filter(it => filter.matches(it))
+            );
         }
     }
 
