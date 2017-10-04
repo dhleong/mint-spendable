@@ -112,8 +112,17 @@ class MainUI extends EventEmitter {
             `  +   Inferred spending: ${fmt$(b.inferredSpending)}`;
         if (b.unbudgetedSpending > 0) {
             spendingContents += `\n  + Unbudgeted spending: ${fmt$(b.unbudgetedSpending)}`;
-            extra = 1;
+            ++extra;
         }
+
+        if (b.lastMonthRollover > 0) {
+            spendingContents += `\n  -  Unspent last month: ${fmt$(b.lastMonthRollover)}`;
+            ++extra;
+        } else if (b.lastMonthRollover < 0) {
+            spendingContents += `\n  +   Rollover spending: ${fmt$(-b.lastMonthRollover)}`;
+            ++extra;
+        }
+
         blessed.Text({
             parent: box,
             left: 1,

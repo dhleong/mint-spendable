@@ -21,6 +21,28 @@ function doneRefreshing(unrelatedAccounts, maxRefreshingIds, accounts) {
     return remaining <= (maxRefreshingIds || 0);
 }
 
+function neutralizeRollover(budgets) {
+    budgets.spending.forEach(b => {
+        // .ramt is "rollover amount"
+        b.spent = b.amt - b.ramt;
+    });
+    if (budgets.unbudgeted && budgets.unbudgeted.spending) {
+        budgets.unbudgeted.spending.forEach(b => {
+            // unbudgeted spending won't have a rollover amount
+            b.spent = b.amt;
+        });
+    }
+}
+
+function sum(items, property = undefined) {
+    return items.reduce((total, item) => {
+        const amount = property
+            ? item[property]
+            : item;
+        return total + amount;
+    }, 0);
+}
+
 class SpendableService extends EventEmitter {
 
     constructor(store, requestCredentials) {
@@ -79,7 +101,18 @@ class SpendableService extends EventEmitter {
     }
 
     async loadBudgets() {
-        this.budgets = await this.mint.getBudgets();
+        const bothBudgets = await this.mint.getBudgets({
+            months: 2,
+        });
+
+        if (bothBudgets.length >= 2) {
+            const [ lastMonth, thisMonth ] = bothBudgets.slice(0, 2);
+            this.budgets = thisMonth;
+            this.lastBudgets = lastMonth;
+        } else {
+            this.budgets = bothBudgets[0];
+            this.lastBudgets = null;
+        }
 
         // load these eagerly since getCategories() has to return
         // instantly
@@ -121,47 +154,46 @@ class SpendableService extends EventEmitter {
         const goalCategories = config.goalCategories || {};
 
         const budgets = this.budgets;
+        const lastBudgets = this.lastBudgets;
 
         // first step, neutralize rollover amounts
-        this.budgets.spending.forEach(b => {
-            // .ramt is "rollover amount"
-            b.spent = b.amt - b.ramt;
-        });
-        if (this.budgets.unbudgeted && this.budgets.unbudgeted.spending) {
-            this.budgets.unbudgeted.spending.forEach(b => {
-                // unbudgeted spending won't have a rollover amount
-                b.spent = b.amt;
-            });
+        neutralizeRollover(budgets);
+
+        let lastMonthSpending = 0;
+        let lastMonthRollover = 0;
+        if (lastBudgets) {
+            neutralizeRollover(lastBudgets);
+
+            // calculate last month's spending/rollover
+            const lastMonthBudgeted = sum(lastBudgets.spending, 'bgt');
+
+            const unbudgetedItems = lastBudgets.unbudgeted.spending.filter(it => it.cat !== 0);
+            lastMonthSpending = sum(lastBudgets.spending, 'spent')
+                + sum(unbudgetedItems, 'spent');
+            lastMonthRollover = lastMonthBudgeted - lastMonthSpending;
         }
 
-        const budgeted = budgets.spending.map(b => b.bgt)
-            .reduce((total, a) => {
-                return total + a;
-            }, 0);
+        const budgeted = sum(budgets.spending, 'bgt');
 
         const unbudgetedItems = budgets.unbudgeted.spending.filter(b =>
             b.cat != 0 && b.spent > 0 && !goalCategories[b.category]
         );
 
-        const unbudgetedSpending = unbudgetedItems.reduce((total, b) => {
-            return total + b.spent;
-        }, 0);
+        const unbudgetedSpending = sum(unbudgetedItems, 'spent');
 
         let inferredSpending = 0;
-        const budgetedSpending = budgets.spending.map(b => {
+        const budgetedSpending = sum(budgets.spending.map(b => {
             if (definiteCategories[b.category]) {
                 inferredSpending += b.bgt;
                 return Math.max(b.spent, b.bgt);
             } else {
                 return b.spent;
             }
-        }).reduce((total, a) => {
-            return total + a;
-        }, 0);
+        }));
 
         const totalSpent = budgetedSpending + unbudgetedSpending;
         const nonInferredSpending = budgetedSpending - inferredSpending;
-        const spendable = budgeted - totalSpent;
+        const spendable = budgeted - totalSpent + lastMonthRollover;
 
         // date math
         const now = new Date();
@@ -191,6 +223,8 @@ class SpendableService extends EventEmitter {
         return {
             budgeted,
             totalSpent,
+            lastMonthSpending,
+            lastMonthRollover,
 
             nonInferredSpending,
             inferredSpending,

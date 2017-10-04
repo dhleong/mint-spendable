@@ -94,6 +94,8 @@ class TestSpendableService extends EventEmitter {
             budgeted: 6189.0,
             totalSpent: 4443.51,
 
+            lastMonthRollover: -345.0,
+
             nonInferredSpending: 436.51,
             inferredSpending: 3949.0,
             unbudgetedSpending: 58.0,
