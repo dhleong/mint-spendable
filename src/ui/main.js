@@ -8,9 +8,8 @@ const { fmt$ } = require('./util');
 
 const CATEGORY_KINDS = [
     ['inferredSpendingItems', "Inferred Spending", 'bgt'],
-    ['rolledOverItems', "Rolled Over", 'amt'],
-    ['budgetedSpendingItems', "Budgeted Spending", 'amt'],
-    ['unbudgetedItems', "Unbudgeted Spending", 'amt'],
+    ['budgetedSpendingItems', "Budgeted Spending", 'spent'],
+    ['unbudgetedItems', "Unbudgeted Spending", 'spent'],
 ];
 
 function cleanHeader(header) {

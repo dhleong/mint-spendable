@@ -119,32 +119,41 @@ class SpendableService extends EventEmitter {
         const config = await this.store.loadConfig();
         const definiteCategories = config.definiteCategories || {};
         const goalCategories = config.goalCategories || {};
-        const ignoredRollover = config.ignoredRollover || {};
 
         const budgets = this.budgets;
+
+        // first step, neutralize rollover amounts
+        this.budgets.spending.forEach(b => {
+            // .ramt is "rollover amount"
+            b.spent = b.amt - b.ramt;
+        });
+        if (this.budgets.unbudgeted && this.budgets.unbudgeted.spending) {
+            this.budgets.unbudgeted.spending.forEach(b => {
+                // unbudgeted spending won't have a rollover amount
+                b.spent = b.amt;
+            });
+        }
 
         const budgeted = budgets.spending.map(b => b.bgt)
             .reduce((total, a) => {
                 return total + a;
-            });
+            }, 0);
 
         const unbudgetedItems = budgets.unbudgeted.spending.filter(b =>
-            b.cat != 0 && b.amt > 0 && !goalCategories[b.category]
+            b.cat != 0 && b.spent > 0 && !goalCategories[b.category]
         );
 
-        const unbudgetedSpending = unbudgetedItems.map(b => b.amt).reduce((total, a) => {
-            return total + a;
+        const unbudgetedSpending = unbudgetedItems.reduce((total, b) => {
+            return total + b.spent;
         }, 0);
 
         let inferredSpending = 0;
         const budgetedSpending = budgets.spending.map(b => {
             if (definiteCategories[b.category]) {
                 inferredSpending += b.bgt;
-                return Math.max(b.amt, b.bgt);
-            } else if (b.amt > 0 && !ignoredRollover[b.category]) {
-                return b.amt;
+                return Math.max(b.spent, b.bgt);
             } else {
-                return 0;
+                return b.spent;
             }
         }).reduce((total, a) => {
             return total + a;
@@ -173,13 +182,11 @@ class SpendableService extends EventEmitter {
 
         const inferredSpendingItems = budgets.spending.filter(b => definiteCategories[b.category]);
 
-        const rolledOverItems = budgets.spending.filter(b => !ignoredRollover[b.category] && b.amt < 0);
-
-        const budgetedSpendingItems = budgets.spending.filter(b => !definiteCategories[b.category] && b.amt > 0);
+        const budgetedSpendingItems = budgets.spending.filter(b => !definiteCategories[b.category] && b.spent > 0);
 
         const unbudgetedItemsDisplay =
             unbudgetedItems.sort((a, b) => a.category.localeCompare(b.category))
-                .filter(b => b.cat !== 0 && b.amt > 0);
+                .filter(b => b.cat !== 0 && b.spent > 0);
 
         return {
             budgeted,
@@ -198,7 +205,6 @@ class SpendableService extends EventEmitter {
             monthDays,
 
             inferredSpendingItems,
-            rolledOverItems,
             budgetedSpendingItems,
             unbudgetedItems: unbudgetedItemsDisplay,
         }

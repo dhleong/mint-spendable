@@ -131,29 +131,25 @@ class TestSpendableService extends EventEmitter {
                     amt: 0.0,
                 }
             ],
-            rolledOverItems: [
-                {
-                    category: "Personal Care: Laundry",
-                    bgt: 25.0,
-                    amt: -10.0,
-                },
-            ],
             budgetedSpendingItems: [
                 {
                     category: "Food & Dining",
                     bgt: 1000.0,
                     amt: 346.51,
+                    spent: 446.51,
                 },
                 {
                     category: "Auto & Transport",
                     bgt: 500.0,
                     amt: 777.0,
+                    spent: 777.0,
                 },
             ],
             unbudgetedItems: [
                 {
                     category: "Travel",
                     amt: 58.0,
+                    spent: 58.0,
                 }
             ],
         }
