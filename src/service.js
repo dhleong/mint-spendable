@@ -159,6 +159,9 @@ class SpendableService extends EventEmitter {
         // first step, neutralize rollover amounts
         neutralizeRollover(budgets);
 
+        const isRelevantUnbudgetedItem = b =>
+            b.cat !== 0 && b.spent > 0 && !goalCategories[b.category];
+
         let lastMonthSpending = 0;
         let lastMonthRollover = 0;
         if (lastBudgets) {
@@ -167,17 +170,19 @@ class SpendableService extends EventEmitter {
             // calculate last month's spending/rollover
             const lastMonthBudgeted = sum(lastBudgets.spending, 'bgt');
 
-            const unbudgetedItems = lastBudgets.unbudgeted.spending.filter(it => it.cat !== 0);
+            const unbudgetedItems = lastBudgets.unbudgeted.spending.filter(
+                isRelevantUnbudgetedItem);
             lastMonthSpending = sum(lastBudgets.spending, 'spent')
                 + sum(unbudgetedItems, 'spent');
+
+            // NOTE: If we underspent, this will be POSITIVE
             lastMonthRollover = lastMonthBudgeted - lastMonthSpending;
         }
 
         const budgeted = sum(budgets.spending, 'bgt');
 
-        const unbudgetedItems = budgets.unbudgeted.spending.filter(b =>
-            b.cat != 0 && b.spent > 0 && !goalCategories[b.category]
-        );
+        const unbudgetedItems = budgets.unbudgeted.spending.filter(
+            isRelevantUnbudgetedItem);
 
         const unbudgetedSpending = sum(unbudgetedItems, 'spent');
 
@@ -191,9 +196,9 @@ class SpendableService extends EventEmitter {
             }
         }));
 
-        const totalSpent = budgetedSpending + unbudgetedSpending;
+        const totalSpent = budgetedSpending + unbudgetedSpending - lastMonthRollover;
         const nonInferredSpending = budgetedSpending - inferredSpending;
-        const spendable = budgeted - totalSpent + lastMonthRollover;
+        const spendable = budgeted - totalSpent;
 
         // date math
         const now = new Date();
@@ -205,7 +210,7 @@ class SpendableService extends EventEmitter {
             ++remainingDays;
         }
 
-        const inferredSpendable = budgeted - inferredSpending;
+        const inferredSpendable = budgeted - inferredSpending + lastMonthRollover;
         const inferredSpendablePerDay = inferredSpendable / monthDays;
 
         const avgSpending = (nonInferredSpending + unbudgetedSpending) / thisDay;
