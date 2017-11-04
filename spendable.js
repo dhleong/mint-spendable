@@ -111,6 +111,9 @@ SERVICE.on('browser-login', state =>
         BROWSER_LOGIN_MESSAGES[state]
     )
 );
+SERVICE.on('status', message =>
+    UI.setLoading(message)
+);
 
 // init the UI
 UI.on('show-category-transactions', reportErrors(async (kind, category) => {

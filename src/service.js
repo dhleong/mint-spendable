@@ -1,6 +1,7 @@
 
 const { EventEmitter } = require('events');
 const PepperMint = require('pepper-mint');
+const { delay } = require('./ui/util');
 
 const FORWARDED_EVENTS = [
     'refreshing',
@@ -94,10 +95,16 @@ class SpendableService extends EventEmitter {
         // save for use in isRelevantAccount
         this.unrelatedAccounts = unrelatedAccounts;
 
-        await this.mint.refreshAndWaitIfNeeded({
-            doneRefreshing: doneRefreshing.bind(doneRefreshing,
-                unrelatedAccounts, maxRefreshingIds),
-        });
+        try {
+            await this.mint.refreshAndWaitIfNeeded({
+                doneRefreshing: doneRefreshing.bind(doneRefreshing,
+                    unrelatedAccounts, maxRefreshingIds),
+            });
+        } catch (e) {
+            this.emit('status', "Error refreshing accounts\n" + e.body);
+
+            await delay(1000);
+        }
     }
 
     async loadBudgets() {
