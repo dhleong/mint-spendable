@@ -1,6 +1,6 @@
 {
   "name": "mint-spendable",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Check how much I can spend",
   "bin": {
     "spendable": "./spendable.js"

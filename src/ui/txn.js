@@ -109,19 +109,23 @@ class Spinner extends blessed.Button {
             throw new Error(`Attempt to select invalid index ${index}`);
         }
 
-        this.selected = index;
-        this._updateContent();
-
         if (this._.pickerBox.visible) {
             this._.pickerBox.hide();
 
             // only emit the event if NOT triggered programmatically
             // (IE: while the picker box is visible)
-            this.emit('select', this.items[index], index);
+            const items = this._getFilteredItems();
+            const item = items[index];
+            this.selected = this.items.indexOf(item);
+            this.emit('select', item, index);
 
             // restore focus back where it belongs
             this.screen.restoreFocus();
+        } else {
+            this.selected = index;
         }
+
+        this._updateContent();
     }
 
     cancel() {
@@ -137,9 +141,13 @@ class Spinner extends blessed.Button {
         this._updateContent();
     }
 
+    reset() {
+        this.filter("");
+    }
+
     _onType(ch, key) {
         if (key.name === 'escape' && this._.filter.length) {
-            this.filter('');
+            this.filter("");
             return;
         } else if (key.name === 'escape') {
             this.cancel();
@@ -162,15 +170,18 @@ class Spinner extends blessed.Button {
         this.filter(this._.filter + ch);
     }
 
+    _getFilteredItems() {
+        const filter = new TextFilter(this._.filter);
+        return this.items.filter(it => filter.matches(it.content));
+    }
+
     _updateContent() {
         this.setContent(this._contentOf(this.items[this.selected]));
 
         if (this.items.length !== this._.lastItemsLength) {
-            const filter = new TextFilter(this._.filter);
             this._.picker.setItems(
-                this.items
+                this._getFilteredItems()
                     .map(it => it.content)
-                    .filter(it => filter.matches(it))
             );
         }
     }
@@ -277,6 +288,8 @@ class TxnUI extends EventEmitter {
             category.select(initial);
         }
         category.on('select', newCategory => {
+            category.reset();
+
             if (txn.categoryId !== newCategory.id) {
                 txn.categoryId = newCategory.id;
                 txn.category = newCategory.value;
