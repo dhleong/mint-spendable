@@ -146,6 +146,8 @@ UI.on('update-transaction', reportErrors(async txn => {
     state.editedTransaction = true;
 }));
 
+UI.on('refresh-budget', reportErrors(refreshBudgetData));
+
 UI.on('back', reportErrors(async () => {
     if (state.editedTransaction) {
         state.editedTransaction = false;

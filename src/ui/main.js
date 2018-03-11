@@ -214,6 +214,7 @@ class MainUI extends EventEmitter {
             }
         });
         categories.key(['q', 'escape'], () => this.emit('quit'));
+        categories.key(['r'], () => this.emit('refresh-budget'));
         categories.focus();
     }
 

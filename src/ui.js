@@ -9,7 +9,7 @@ const { TransactionsUI } = require('./ui/transactions');
 const { TxnUI } = require('./ui/txn');
 
 const UI_EVENTS = {
-    main: ['quit', 'show-category-transactions'],
+    main: ['quit', 'refresh-budget', 'show-category-transactions'],
     transactions: ['back', 'edit-transaction'],
     txn: ['close-transaction', 'update-transaction'],
 };
