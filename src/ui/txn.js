@@ -85,7 +85,7 @@ class Spinner extends blessed.Button {
 
             keys: true,
             mouse: true,
-            vi: true,
+            vi: false, // NOTE: no vim mode here, because we type to filter!
 
             tags: true,
             style: {
