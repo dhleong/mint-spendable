@@ -240,6 +240,7 @@ class TxnUI extends EventEmitter {
             this.emit('close-transaction', txn)
         );
         box.key('c', () => this._changeCategory());
+        box.key('r', () => this._rename());
         box.focus();
 
         this.loader = new IndefiniteProgressBox({
@@ -253,7 +254,7 @@ class TxnUI extends EventEmitter {
         });
         const top = 7;
 
-        const merchant = new blessed.Textbox({
+        const merchant = this._merchantBox = new blessed.Textbox({
             parent: box,
 
             top: top,
@@ -263,10 +264,24 @@ class TxnUI extends EventEmitter {
             width: 40,
 
             name: 'merchant',
+            keys: true,
 
             ...INPUT_STYLE,
         });
         merchant.setValue(txn.merchant);
+        merchant.key('escape', () => {
+            merchant.setValue(txn.merchant);
+            box.focus();
+        });
+        merchant.on('blur', () => {
+            merchant.align = 'center';
+            this._forceRedrawMerchant();
+        });
+        merchant.on('submit', () => {
+            box.focus();
+            txn.merchant = merchant.value;
+            this.emit('update-transaction', txn);
+        });
 
         const category = this._categorySpinner = new Spinner({
             parent: box,
@@ -300,8 +315,6 @@ class TxnUI extends EventEmitter {
             box.focus();
         });
 
-        // TODO rename
-
         this.screen.append(box);
         this.screen.render();
     }
@@ -322,6 +335,16 @@ class TxnUI extends EventEmitter {
         this._categorySpinner.press();
     }
 
+    _rename() {
+        this._merchantBox.focus();
+
+        // there seems to be a bug with cursor position when center-aligned
+        this._merchantBox.align = 'left';
+        this._forceRedrawMerchant();
+
+        this._merchantBox.readInput();
+    }
+
     _findCategoryIndex(categoryId) {
         const len = this._categories.length;
         for (let i=0; i < len; ++i) {
@@ -331,6 +354,15 @@ class TxnUI extends EventEmitter {
         }
 
         return -1;
+    }
+
+    _forceRedrawMerchant() {
+        // TODO maybe try to contribute a patch upstream?
+        // Basically it only redraws when the value changes,
+        // and ignores if the alignment changes.
+        const oldValue = this._merchantBox.value;
+        this._merchantBox.setValue('_');
+        this._merchantBox.setValue(oldValue);
     }
 
 }
