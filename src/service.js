@@ -80,8 +80,19 @@ class SpendableService extends EventEmitter {
         await promise;
 
         if (neededCreds || !creds.cookie) {
-            creds.cookie = `ius_session=${mint.sessionCookies.ius_session}; ` +
-                `thx_guid=${mint.sessionCookies.thx_guid};`;
+            if (mint.sessionCookies && mint.sessionCookies.length) {
+                let cookie = '';
+                for (const c of mint.sessionCookies) {
+                    if (c.name === 'ius_session' || c.name === 'thx_guid') {
+                        cookie += `${c.name}=${c.value};`;
+                    }
+                }
+
+                if (cookie.length) {
+                    creds.cookie = cookie;
+                }
+            }
+
             await this.store.saveCredentials(creds);
         }
     }
