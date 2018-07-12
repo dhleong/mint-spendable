@@ -96,6 +96,11 @@ function reportErrors(asyncFn) {
 // init the service
 var firstNotification = true;
 SERVICE.on('refreshing', accounts => {
+    if (accounts === true) {
+        UI.setLoading("Refreshing accounts...");
+        return;
+    }
+
     const names = accounts
         .filter(SERVICE.isRelevantAccount.bind(SERVICE))
         .map(it => it.name);
