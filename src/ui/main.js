@@ -123,6 +123,8 @@ class MainUI extends EventEmitter {
             ++extra;
         }
 
+        // TODO unbudgeted income?
+
         blessed.Text({
             parent: box,
             left: 1,

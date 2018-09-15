@@ -44,6 +44,18 @@ function sum(items, property = undefined) {
     }, 0);
 }
 
+function findExtraIncome(items) {
+    if (!items || !items.length) return 0;
+
+    let income = 0;
+    for (const item of items) {
+        if (item.cat === 0) continue;
+        income += item.amt;
+    }
+
+    return income;
+}
+
 class SpendableService extends EventEmitter {
 
     constructor(store, requestCredentials) {
@@ -193,9 +205,14 @@ class SpendableService extends EventEmitter {
             lastMonthSpending = sum(lastBudgets.spending, 'spent')
                 + sum(unbudgetedItems, 'spent');
 
+            // offset with any extra income
+            const extraIncome = findExtraIncome(lastBudgets.unbudgeted.income);
+
             // NOTE: If we underspent, this will be POSITIVE
-            lastMonthRollover = lastMonthBudgeted - lastMonthSpending;
+            lastMonthRollover = lastMonthBudgeted - lastMonthSpending + extraIncome;
         }
+
+        const unbudgetedIncome = findExtraIncome(budgets.unbudgeted.income);
 
         const budgeted = sum(budgets.spending, 'bgt');
 
@@ -252,6 +269,7 @@ class SpendableService extends EventEmitter {
             nonInferredSpending,
             inferredSpending,
             unbudgetedSpending,
+            unbudgetedIncome,
 
             inferredSpendable,
             inferredSpendablePerDay,
