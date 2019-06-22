@@ -115,6 +115,11 @@ class MainUI extends EventEmitter {
             ++extra;
         }
 
+        if (b.unbudgetedIncome > 0) {
+            spendingContents += `\n  -   Unbudgeted Income: ${fmt$(b.unbudgetedIncome)}`;
+            ++extra;
+        }
+
         if (b.lastMonthRollover > 0) {
             spendingContents += `\n  -  Unspent last month: ${fmt$(b.lastMonthRollover)}`;
             ++extra;
@@ -123,12 +128,10 @@ class MainUI extends EventEmitter {
             ++extra;
         }
 
-        // TODO unbudgeted income?
-
         blessed.Text({
             parent: box,
             left: 1,
-            top: 2,
+            top: 2 - Math.max(0, extra - 2),
             height: 3 + extra,
             width: '50%',
             align: 'left',

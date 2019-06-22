@@ -231,7 +231,7 @@ class SpendableService extends EventEmitter {
             }
         }));
 
-        const totalSpent = budgetedSpending + unbudgetedSpending - lastMonthRollover;
+        const totalSpent = budgetedSpending + unbudgetedSpending - lastMonthRollover - unbudgetedIncome;
         const nonInferredSpending = budgetedSpending - inferredSpending;
         const spendable = budgeted - totalSpent;
 
@@ -245,7 +245,7 @@ class SpendableService extends EventEmitter {
             ++remainingDays;
         }
 
-        const inferredSpendable = budgeted - inferredSpending + lastMonthRollover;
+        const inferredSpendable = budgeted - inferredSpending + lastMonthRollover + unbudgetedIncome;
         const inferredSpendablePerDay = inferredSpendable / monthDays;
 
         const avgSpending = (nonInferredSpending + unbudgetedSpending) / thisDay;
