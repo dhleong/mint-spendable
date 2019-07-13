@@ -3,7 +3,7 @@
  */
 
 const { EventEmitter } = require('events');
-const blessed = require('blessed');
+const blessed = require('neo-blessed');
 
 const { IndefiniteProgressBox } = require('./widgets');
 

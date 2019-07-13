@@ -1,7 +1,7 @@
 /*
  * Shared widgets
  */
-const blessed = require('blessed');
+const blessed = require('neo-blessed');
 
 class IndefiniteProgressBox extends blessed.Text {
     constructor(options) {

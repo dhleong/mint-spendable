@@ -2,7 +2,7 @@
  * Login UI
  */
 
-const blessed = require('blessed');
+const blessed = require('neo-blessed');
 
 function autoInput(loginUi, textarea) {
     textarea.on('focus', () => {

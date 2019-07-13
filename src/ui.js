@@ -1,6 +1,6 @@
 
 const { EventEmitter } = require('events');
-const blessed = require('blessed');
+const blessed = require('neo-blessed');
 const { IndefiniteProgressBox } = require('./ui/widgets');
 
 const { LoginUI } = require('./ui/login');
