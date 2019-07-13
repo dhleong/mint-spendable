@@ -45,6 +45,8 @@ class JsonStore extends Store {
         const definiteCategories = listToMap(config.definiteCategories);
         /** goal categories are ignored in unbudgeted spending */
         const goalCategories = listToMap(config.goalCategories);
+        /** plannedCategories are ignored in unbudgted, but still listed */
+        const plannedCategories = listToMap(config.plannedPurchaseCategories);
         const ignoredRollover = listToMap(config.ignoredRolloverCategories);
         const maxRefreshingIds = config.maxRefreshingIds || 0;
         const unrelatedAccounts = config.unrelatedAccounts;
@@ -54,6 +56,7 @@ class JsonStore extends Store {
 
             definiteCategories,
             goalCategories,
+            plannedCategories,
             ignoredRollover,
             maxRefreshingIds,
             unrelatedAccounts,

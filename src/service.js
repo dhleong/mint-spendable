@@ -182,6 +182,7 @@ class SpendableService extends EventEmitter {
         const config = await this.store.loadConfig();
         const definiteCategories = config.definiteCategories || {};
         const goalCategories = config.goalCategories || {};
+        const plannedCategories = config.plannedCategories || {};
 
         const budgets = this.budgets;
         const lastBudgets = this.lastBudgets;
@@ -189,8 +190,10 @@ class SpendableService extends EventEmitter {
         // first step, neutralize rollover amounts
         neutralizeRollover(budgets);
 
-        const isRelevantUnbudgetedItem = b =>
-            b.cat !== 0 && b.spent > 0 && !goalCategories[b.category];
+        const isRelevantUnbudgetedItem = b => (
+            b.cat !== 0 && b.spent > 0
+            && !goalCategories[b.category]
+        );
 
         let lastMonthSpending = 0;
         let lastMonthRollover = 0;
@@ -202,8 +205,9 @@ class SpendableService extends EventEmitter {
 
             const unbudgetedItems = lastBudgets.unbudgeted.spending.filter(
                 isRelevantUnbudgetedItem);
+            const unplannedItems = unbudgetedItems.filter(b => !plannedCategories[b.category]);
             lastMonthSpending = sum(lastBudgets.spending, 'spent')
-                + sum(unbudgetedItems, 'spent');
+                + sum(unplannedItems, 'spent')
 
             // offset with any extra income
             const extraIncome = findExtraIncome(lastBudgets.unbudgeted.income);
@@ -218,8 +222,9 @@ class SpendableService extends EventEmitter {
 
         const unbudgetedItems = budgets.unbudgeted.spending.filter(
             isRelevantUnbudgetedItem);
+        const unplannedItems = unbudgetedItems.filter(b => !plannedCategories[b.category]);
 
-        const unbudgetedSpending = sum(unbudgetedItems, 'spent');
+        const unbudgetedSpending = sum(unplannedItems, 'spent');
 
         let inferredSpending = 0;
         const budgetedSpending = sum(budgets.spending.map(b => {
