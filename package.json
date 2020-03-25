@@ -26,7 +26,7 @@
     "keychain": "^1.3.0",
     "keytar": "^4.11.0",
     "neo-blessed": "^0.2.0",
-    "pepper-mint": "^2.1.0"
+    "pepper-mint": "^2.2.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
